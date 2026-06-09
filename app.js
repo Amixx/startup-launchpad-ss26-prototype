@@ -38,7 +38,6 @@ const screens = [
   { id: "s11", silo: "legal", number: "10", render: legalQueue },
   { id: "s12", silo: "legal", number: "11", render: legalReview },
   { id: "s13", silo: "legal", number: "12", render: signoffExport },
-  { id: "s14", silo: "recap", number: "13", render: recapScreen },
 ];
 
 const stage = document.querySelector("#stage");
@@ -245,12 +244,11 @@ function render() {
 
 function baseSilo(silo) {
   if (silo.includes("commercial")) return "commercial";
-  if (silo.includes("legal") || silo === "recap") return "legal";
+  if (silo.includes("legal")) return "legal";
   return "site";
 }
 
 function screenLabel(silo) {
-  if (silo === "recap") return "Abschluss";
   return SCENARIO.roles.find((r) => r.id === silo)?.label ?? silo;
 }
 
@@ -259,9 +257,7 @@ function updateRail(screen) {
     ? "commercial"
     : screen.silo.includes("legal")
       ? "legal"
-      : screen.silo === "recap"
-        ? "legal"
-        : "site";
+      : "site";
   const order = ["site", "commercial", "legal"];
   const index = order.indexOf(active);
   rail.querySelectorAll("[data-rail]").forEach((node) => {
@@ -269,7 +265,7 @@ function updateRail(screen) {
     node.classList.toggle("is-active", node.dataset.rail === active);
     node.classList.toggle(
       "is-done",
-      nodeIndex < index || screen.silo === "recap",
+      nodeIndex < index,
     );
   });
   const packet = document.querySelector("#packet");
@@ -939,7 +935,7 @@ function signoffExport() {
         </div>
         <button class="btn ok" type="button" data-export>
           Nachtragsakte exportieren (PDF)</button
-        ><br /><br />${button("Weiter", "data-next")}
+        ><br /><br />${button("Neu starten", "data-restart")}
       </aside>
       <div class="document">
         <div class="kicker">Dokumentvorschau</div>
@@ -964,48 +960,6 @@ function signoffExport() {
     "app.nachweis.bau/freigabe",
     true,
   );
-}
-
-function recapScreen() {
-  return html`<div class="title-card">
-    <div>
-      <div class="kicker">Abschluss</div>
-      <h1 style="font-size:clamp(42px,6vw,78px)">Ein lückenloser Nachweis.</h1>
-      <p>
-        Drei Rollen, drei Geräte, ein verbundener Nachtrag — von der Felskante
-        bis zur belastbaren Nachtragsakte.
-      </p>
-      <div class="spine">
-        ${SCENARIO.spine.map((s) => `<span>${s}</span>`).join("")}
-      </div>
-      <button class="btn" type="button" data-restart>Neu starten</button>
-    </div>
-    <div class="blueprint-card">
-      <div class="timeline">
-        <div class="mini-panel">
-          <div class="kicker">Baustelle · 09:14</div>
-          <h3>${SCENARIO.eventId}</h3>
-          <p>Felskante mit Foto, GPS, Tiefe und Anordnung erfasst.</p>
-        </div>
-        <div class="mini-panel">
-          <div class="kicker">Kaufmännisch</div>
-          <h3>${SCENARIO.claimId}</h3>
-          <p>
-            Bausoll/Bau-Ist, fehlende Nachweise und ${SCENARIO.pricing.basis}
-            geklärt.
-          </p>
-        </div>
-        <div class="mini-panel">
-          <div class="kicker">Recht</div>
-          <h3>Freigegeben</h3>
-          <p>
-            Prüffähige Akte mit Begründung, Nachweisen und Kalkulation
-            exportbereit.
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>`;
 }
 
 // <!-- ============ NAV / TRANSITIONS (JS) ============ -->
