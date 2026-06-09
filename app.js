@@ -48,6 +48,21 @@ const status = document.querySelector("#status");
 const readout = document.querySelector("#readout");
 const toast = document.querySelector("#toast");
 
+function languageFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const requestedLanguage = (params.get("lang") ?? "").toLowerCase();
+
+  return Object.prototype.hasOwnProperty.call(I18N, requestedLanguage)
+    ? requestedLanguage
+    : "de";
+}
+
+function setLanguageParam(language) {
+  const url = new URL(window.location.href);
+  url.searchParams.set("lang", language);
+  window.history.replaceState({}, "", url);
+}
+
 function html(strings, ...values) {
   return strings.reduce((out, s, i) => out + s + (values[i] ?? ""), "");
 }
@@ -1036,6 +1051,7 @@ function recapScreen() {
 }
 
 // <!-- ============ NAV / TRANSITIONS (JS) ============ -->
+currentLanguage = languageFromUrl();
 renderShell();
 render();
 document
@@ -1050,6 +1066,7 @@ document
 document.querySelectorAll("[data-lang]").forEach((button) => {
   button.addEventListener("click", () => {
     currentLanguage = button.dataset.lang;
+    setLanguageParam(currentLanguage);
     renderShell();
     render();
   });

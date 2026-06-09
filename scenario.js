@@ -469,4 +469,4 @@ const I18N = {
   },
 };
 
-let currentLanguage = "en";
+let currentLanguage = "de";
