@@ -57,7 +57,7 @@ const SCENARIO = {
   siteEvents: [
     ["07:42", "LKW-Zufahrt Nord blockiert", "Info"],
     ["08:55", "Aufmaß Schalung Abschnitt B2", "OK"],
-    ["09:14", "Felskante bei Aushub entdeckt", "Neu"],
+    ["09:14", "Rissbildung Bodenplatte A1", "Neu"],
   ],
   guidedChecks: [
     ["Foto mit Maßstab", true],
@@ -102,6 +102,33 @@ const SCENARIO = {
     "Kalkulation / Urkalkulationsbezug",
     "Begründung § 2 VOB/B",
   ],
+  voiceTranscript: "Wir haben beim Aushub auf minus zwei vierzig Fels angetroffen. Das war nicht im LV vorgesehen, da steht nur Bodenklasse drei bis fünf. Der Bauleiter hat angeordnet, dass wir mit nem größeren Bagger und Meißel weitermachen. Die Anordnung ist BL-44. Die Felskante zieht sich quer durch die ganze Baugrube B.",
+  aiSummary: {
+    what: "Fels / stark verfestigter Boden (BK 6–7)",
+    location: {
+      bauteil: "Baufeld B",
+      geschoss: "Erdarbeiten, UK −2,40 m",
+      achse: "Achse A3–A7",
+    },
+    spiegel: {
+      soll: "LV 02.03.0010 — Bodenaushub Bodenklasse 3–5",
+      ist: "Fels / stark verfestigter Boden BK 6–7 angetroffen",
+    },
+    ursache: "changed_conditions",
+    instruction: "BL-44 — Fortführung mit Meißelverfahren",
+    terminauswirkung: {
+      status: "delay",
+      duration: "2–3 Tage",
+    },
+  },
+  smartActions: [
+    { id: "action-photo", task: "Foto der Felskante mit Maßstab", icon: "📸", auto: false },
+    { id: "action-plan", task: "Planausschnitt markieren", icon: "📐", auto: false },
+    { id: "action-depth", task: "Tiefenmessung verifiziert", icon: "📏", auto: true, source: "GPS" },
+    { id: "action-instruction", task: "Anordnung BL-44 verknüpfen", icon: "📎", auto: false },
+    { id: "action-gps", task: "GPS-Position erfasst", icon: "📍", auto: true, source: "GPS" },
+    { id: "action-weather", task: "Wetter & Bedingungen", icon: "🌤️", auto: true, source: "Sensor" },
+  ],
   spine: [
     "Bausoll",
     "Bau-Ist",
@@ -124,6 +151,99 @@ const I18N = {
       toast: "Change-order file exported as PDF",
     },
     replace: {
+      "Baufeld B": "Building Site B",
+      "Erdarbeiten, UK −2,40 m": "Excavation, UK −2.40 m",
+      "Achse A3–A7": "Axis A3–A7",
+      "Fels / stark verfestigter Boden BK 6–7 angetroffen": "rock / strongly compacted soil class 6–7 encountered",
+      "Planausschnitt markieren": "Mark plan excerpt",
+      "Verortung": "Location",
+      "Bauteil": "Building Part",
+      "Geschoss": "Floor",
+      "Achse": "Axis",
+      "Soll-Ist-Abgleich": "Soll/Ist Comparison",
+      "Soll": "Soll",
+      "Ist": "Ist",
+      "Ursache": "Cause",
+      "Anordnung durch AG / Architekt": "Instruction by Client / Architect",
+      "Geänderte Gegebenheiten vor Ort": "Changed local conditions",
+      "Widerspruch in Planungsunterlagen": "Contradiction in planning documents",
+      "Sonstiges": "Other",
+      "Termin": "Schedule",
+      "Verzögerung erwartet": "Delay expected",
+      "2–3 Tage Verzögerung erwartet": "2–3 days delay expected",
+      "Keine Verzögerung": "No delay",
+      "Wir haben beim Aushub auf minus zwei vierzig Fels angetroffen. Das war nicht im LV vorgesehen, da steht nur Bodenklasse drei bis fünf. Der Bauleiter hat angeordnet, dass wir mit nem größeren Bagger und Meißel weitermachen. Die Anordnung ist BL-44. Die Felskante zieht sich quer durch die ganze Baugrube B.":
+        "During excavation, we encountered rock at minus two forty. That was not in the BoQ, it only says soil excavation class three to five. The site manager instructed us to continue with a larger excavator and a breaker. The instruction is BL-44. The rock edge runs across the entire foundation pit B.",
+      "Fels / stark verfestigter Boden (BK 6–7)":
+        "rock / strongly compacted soil (class 6-7)",
+      "Baugrube B, Tiefe −2,40 m":
+        "foundation pit B, depth −2.40 m",
+      "LV 02.03.0010 — Bodenaushub Bodenklasse 3–5":
+        "LV 02.03.0010 — Soil excavation class 3–5",
+      "Tatsächliche Bodenklasse weicht vom LV ab":
+        "Actual soil class deviates from bill of quantities",
+      "BL-44 — Fortführung mit Meißelverfahren":
+        "BL-44 — continuation with breaker method",
+      "+1.000 m³ Mehraushub":
+        "+1,000 m³ additional excavation",
+      "Foto der Felskante mit Maßstab":
+        "photo of the rock edge with scale",
+      "Tiefenmessung verifiziert":
+        "depth measurement verified",
+      "Tiefenmessung bestätigen (−2,40 m)":
+        "confirm depth measurement (−2.40 m)",
+      "Anordnung BL-44 verknüpfen":
+        "link instruction BL-44",
+      "GPS-Position erfasst":
+        "GPS location captured",
+      "Wetter & Bedingungen":
+        "weather & conditions",
+      "Sprich frei über das Ereignis...":
+        "Speak freely about the event...",
+      "Aufnahme läuft...":
+        "Recording in progress...",
+      "Sprachaufzeichnung":
+        "Voice recording",
+      "Sprachnotiz & Protokoll":
+        "Voice note & transcript",
+      "KI-Analyse":
+        "AI Analysis",
+      "Strukturierter Entwurf":
+        "Structured Draft",
+      "Rissbildung Bodenplatte A1":
+        "Crack formation base slab A1",
+      "Mögliche Abweichung":
+        "Possible deviation",
+      "Foto aufnehmen":
+        "Take photo",
+      "Was":
+        "What",
+      "Vollständiger Nachweis (100%)":
+        "Complete evidence (100%)",
+      "Beschreibe die Abweichung":
+        "Describe the deviation",
+      "Entwurf wird erstellt...":
+        "Preparing draft...",
+      "Strukturierung...":
+        "Structuring...",
+      "Sprachaufnahme wird verarbeitet...":
+        "Processing voice recording...",
+      "Analyse läuft...":
+        "Analyzing...",
+      "Erforderliche Nachweise":
+        "Required evidence",
+      "Sprachaufzeichnung beenden":
+        "Stop recording",
+      "Abweichung melden":
+        "Report deviation",
+      "Aufgabe: Foto der Felskante mit Maßstab":
+        "Task: Photo of rock edge with scale",
+      "Abweichung aufnehmen":
+        "Record deviation",
+      "Automatisch":
+        "Auto",
+      "Sensor":
+        "Sensor",
       "Vom Bausoll-Abgleich zur prüffähigen Nachtragsakte.":
         "From contract-scope comparison to an auditable change-order file.",
       "Ein Nachtrag. Drei Rollen. Drei Geräte.":
@@ -147,7 +267,7 @@ const I18N = {
       "Tiefe −2,40 m": "depth −2.40 m",
       "LKW-Zufahrt Nord blockiert": "truck access north blocked",
       "Aufmaß Schalung Abschnitt B2": "measurement formwork section B2",
-      "Felskante bei Aushub entdeckt": "rock edge discovered during excavation",
+      "Rissbildung Bodenplatte A1": "crack formation base slab A1",
       "Foto mit Maßstab": "photo with scale",
       "Tiefe dokumentiert": "depth documented",
       "Anordnung verknüpfen": "link instruction",
