@@ -7,6 +7,7 @@ const state = {
   transcriptInterval: null,
   processingTimeout: null,
   toggledActions: {},
+  selectedPricingRowId: "P05",
 };
 
 const screens = [
@@ -23,6 +24,8 @@ const screens = [
     render: commercialDashboard,
   },
   { id: "s8", silo: "commercial", number: "07", render: deviationHero },
+  { id: "s8b", silo: "commercial", number: "07b", render: evidenceGraph },
+  { id: "s8c", silo: "commercial", number: "07c", render: pricingEvidenceMap },
   {
     id: "s9",
     silo: "commercial",
@@ -196,6 +199,13 @@ function render() {
       exportPdf();
     }),
   );
+  stage.querySelectorAll("[data-pricing-row]").forEach((el) =>
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      state.selectedPricingRowId = el.dataset.pricingRow;
+      render();
+    }),
+  );
   stage.querySelectorAll("[data-toggle-action]").forEach((el) => {
     el.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -311,6 +321,7 @@ function restart() {
   state.legalResolved = false;
   state.exported = false;
   state.lastSilo = null;
+  state.selectedPricingRowId = "P05";
   toast.classList.remove("is-visible");
   render();
 }
@@ -618,6 +629,152 @@ function siteConfirm() {
       </div>
 
       ${button("Weiter")}`
+  );
+}
+
+function evidenceGraph() {
+  const cards = SCENARIO.demoWorkflow.evidenceCards;
+  const groundCards = cards.filter((c) => c.supports === "dem Grunde nach");
+  const heightCards = cards.filter((c) => c.supports === "der Höhe nach");
+
+  function renderCard(c) {
+    const noteHtml = c.note
+      ? `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`
+      : "";
+    return `<div class="mini-panel">
+      <div class="metadata-grid" style="margin-bottom:6px">
+        ${chip(c.id, "blue")} ${chip(c.type, "")}
+      </div>
+      <strong>${c.title}</strong>
+      <p class="mono" style="color:var(--muted);font-size:12px;margin:4px 0 0">${c.role}</p>
+      ${noteHtml}
+    </div>`;
+  }
+
+  return browser(
+    html`<div class="panel">
+      <div class="kicker">Evidence Graph · KI-Klassifizierung</div>
+      <h2>Baustellenereignis strukturiert</h2>
+      <p>Das Baustellenereignis wurde klassifiziert und die Nachweise den Prüfkategorien zugeordnet.</p>
+      <div class="resolve-layout">
+        <div>
+          <h3 style="margin-bottom:12px">${chip("dem Grunde nach", "blue")} Anspruchsbegründung</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${groundCards.map(renderCard).join("")}
+          </div>
+        </div>
+        <div>
+          <h3 style="margin-bottom:12px">${chip("der Höhe nach", "ok")} Preisnachweis</h3>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            ${heightCards.map(renderCard).join("")}
+          </div>
+        </div>
+      </div>
+      <p class="mono" style="margin-top:16px;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
+        KI-Klassifizierung simuliert · keine echte Verarbeitung
+      </p>
+      <br />${button("Weiter →")}
+    </div>`,
+  );
+}
+
+function pricingEvidenceMap() {
+  const rows = SCENARIO.demoWorkflow.pricingRows;
+  const sel =
+    rows.find((r) => r.id === state.selectedPricingRowId) ||
+    rows.find((r) => r.risk === "red") ||
+    rows[0];
+
+  const evidenceLabels = {
+    A04: "A04 Urkalkulation",
+    A09: "A09 Regiebericht",
+    A10: "A10 Aufmaß",
+    A11: "A11 Wiegeschein",
+    A12: "A12 Kalkulation",
+  };
+
+  const costLines = rows
+    .map((r) => {
+      const isSelected = r.id === sel.id;
+      const riskChip =
+        r.risk === "red"
+          ? chip("Kritisch", "flag")
+          : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`;
+      return `<div class="check ${isSelected ? "open" : ""}"
+          data-pricing-row="${r.id}"
+          style="cursor:pointer;${isSelected ? "outline:2px solid rgba(130,199,255,.5);background:rgba(130,199,255,.08);" : ""}">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+            ${chip(r.id, "blue")} <strong style="font-size:13px">${r.description}</strong>
+          </div>
+          <span class="mono" style="font-size:12px;color:var(--muted)">${r.amount}</span>
+        </div>
+        ${riskChip}
+      </div>`;
+    })
+    .join("");
+
+  const selEvidenceChain = sel.evidence.length
+    ? sel.evidence.map((e) => evidenceLabels[e] ?? e).join(" → ") +
+      ` → ${sel.id}`
+    : `Keine Belegkette → ${sel.id}`;
+
+  const selEvidenceChips = sel.evidence.length
+    ? sel.evidence.map((e) => chip(evidenceLabels[e] ?? e, "blue")).join(" ")
+    : chip("Kein Nachweis", "flag");
+
+  const borderColor = sel.risk === "red" ? "var(--flag)" : "#ffc83c";
+  const critCount = rows.filter((r) => r.risk === "red").length;
+  const openCount = rows.filter((r) => r.risk === "yellow").length;
+
+  return browser(
+    html`<div class="panel">
+      <div class="kicker">Preisnachweis · der Höhe nach</div>
+      <h2>${SCENARIO.pricing.newPosition}</h2>
+      <p>Jede Kostenzeile muss durch Menge, Preisbasis und Belegkette nachvollziehbar sein.</p>
+      <div class="kpis" style="margin-bottom:16px">
+        <div class="mini-panel kpi">
+          <span class="mono">Nachtragssumme netto</span>
+          <strong>${SCENARIO.demoWorkflow.pricingTotal}</strong>
+        </div>
+        <div class="mini-panel kpi">
+          <span class="mono">Prüfstatus</span>
+          <strong style="color:var(--flag)">${critCount} kritisch · ${openCount} offen</strong>
+        </div>
+      </div>
+      <div class="resolve-layout">
+        <div>
+          <p class="mono" style="font-size:11px;color:var(--muted);margin:0 0 10px">Kostenzeile auswählen</p>
+          <div class="checklist" style="gap:8px">
+            ${costLines}
+          </div>
+        </div>
+        <div class="mini-panel" style="border-left:3px solid ${borderColor};padding-left:16px;align-self:flex-start">
+          <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em">Aktuell geprüft</p>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px">
+            <strong>${sel.id} · ${sel.description}</strong>
+            ${sel.risk === "red" ? chip("Kritisch", "flag") : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`}
+          </div>
+          <div class="spec-list" style="margin-bottom:12px">
+            <div class="spec-line">
+              <span class="mono">Kostenlogik</span>
+              <strong class="mono">${sel.quantity} × ${sel.unitRate} = ${sel.amount}</strong>
+            </div>
+            <div class="spec-line">
+              <span class="mono">Belegkette</span>
+              <span class="mono" style="color:#82c7ff;font-size:12px">${selEvidenceChain}</span>
+            </div>
+          </div>
+          <div style="margin-bottom:10px">${selEvidenceChips}</div>
+          <p style="font-size:13px;margin:0 0 12px">${sel.weakness}</p>
+          <div style="background:rgba(255,200,60,.07);border:1px solid rgba(255,200,60,.2);border-radius:6px;padding:10px 12px">
+            <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em">Empfohlene nächste Aktion</p>
+            <p style="margin:0;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>
+          </div>
+        </div>
+      </div>
+      <br />${button("Weiter →")}
+    </div>`,
   );
 }
 

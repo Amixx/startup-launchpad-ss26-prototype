@@ -137,6 +137,24 @@ const SCENARIO = {
     "Menge/Kosten",
     "prüffähige Nachtragsakte",
   ],
+  demoWorkflow: {
+    evidenceCards: [
+      { id: "A02", type: "LV-Auszug", title: "LV 02.03.0010", role: "Bausoll", supports: "dem Grunde nach" },
+      { id: "A06", type: "Fotos", title: "Fotos Felskante + Maßstab", role: "Bau-Ist", supports: "dem Grunde nach" },
+      { id: "A07", type: "Anordnung / Protokoll", title: "BL-44 Meißelverfahren", role: "Anordnung", supports: "dem Grunde nach", note: "Keine AG-Gegenzeichnung" },
+      { id: "A10", type: "Aufmaß", title: "+1.000 m³ Mehraushub", role: "Menge", supports: "der Höhe nach", note: "Nicht AG-bestätigt" },
+      { id: "A04", type: "Urkalkulation", title: "Geräte-/Lohnansätze", role: "Preisbasis", supports: "der Höhe nach" },
+    ],
+    pricingRows: [
+      { id: "P01", category: "Lohn", description: "Meißelarbeiten, Kolonne", quantity: "68 h", unitRate: "68,00 €/h", amount: "4.624,00 €", priceBasis: "Regiebericht A09", evidence: ["A09"], risk: "yellow", weakness: "Regiebericht nicht gegengezeichnet", missingProof: "BÜ-Gegenzeichnung Regiebericht anfordern" },
+      { id: "P02", category: "Gerät", description: "30t Bagger + Hydraulikhammer", quantity: "55 h", unitRate: "215,00 €/h", amount: "11.825,00 €", priceBasis: "Regiebericht A09 / Urkalkulation A04", evidence: ["A09", "A04"], risk: "yellow", weakness: "Gerätestunden nicht bestätigt", missingProof: "Stundenfreigabe oder BÜ-Bestätigung ergänzen" },
+      { id: "P03", category: "Gerät", description: "Radlader Materialtransport", quantity: "16 h", unitRate: "115,00 €/h", amount: "1.840,00 €", priceBasis: "Regiebericht A09", evidence: ["A09"], risk: "yellow", weakness: "Nicht gegengezeichnet", missingProof: "Regiebericht gegenzeichnen lassen" },
+      { id: "P04", category: "Transport", description: "Abtransport Felsgestein", quantity: "1.000 m³", unitRate: "4,50 €/m³", amount: "4.500,00 €", priceBasis: "Aufmaß A10", evidence: ["A10"], risk: "yellow", weakness: "Aufmaß nicht AG-bestätigt", missingProof: "Aufmaß bestätigen lassen" },
+      { id: "P05", category: "Nebenarbeiten", description: "Nebenarbeiten pauschal", quantity: "1", unitRate: "580,00 €", amount: "580,00 €", priceBasis: "Pauschalansatz", evidence: [], risk: "red", weakness: "Pauschalposition ohne belastbaren Nachweis", missingProof: "Tätigkeiten aufschlüsseln oder Nachweis ergänzen" },
+      { id: "P06", category: "Zuschläge", description: "BGK / AGK / Wagnis & Gewinn", quantity: "22%", unitRate: "auf EKT", amount: "5.141,18 €", priceBasis: "Urkalkulation / EFB A04", evidence: ["A04", "A12"], risk: "yellow", weakness: "Zuschlagslogik nur teilweise nachvollziehbar", missingProof: "EFB-Bezug und Zuschlagsbasis erläutern" },
+    ],
+    pricingTotal: "28.510 € netto",
+  },
 };
 
 const I18N = {
@@ -432,6 +450,33 @@ const I18N = {
       Prüffähige: "auditable",
       enthalten: "included",
       Nachtragssumme: "change-order amount",
+      "Evidence Graph · KI-Klassifizierung": "Evidence Graph · AI Classification",
+      "Baustellenereignis strukturiert": "Site event structured",
+      "Das Baustellenereignis wurde klassifiziert und die Nachweise den Prüfkategorien zugeordnet.":
+        "The site event has been classified and evidence assigned to review categories.",
+      "dem Grunde nach": "on entitlement",
+      "der Höhe nach": "on quantum",
+      "Anspruchsbegründung": "Entitlement basis",
+      "Preisnachweis · der Höhe nach": "Pricing evidence · on quantum",
+      "Preisnachweis": "Pricing evidence",
+      "Jede Kostenzeile muss durch Menge, Preisbasis und Belegkette nachvollziehbar sein.":
+        "Each cost line must be traceable by quantity, price basis and evidence chain.",
+      "Nachtragssumme netto": "Change-order amount net",
+      "1 kritisch": "1 critical",
+      "Kostenzeile auswählen": "Select cost line",
+      "Aktuell geprüft": "Currently reviewed",
+      "Kostenlogik": "Cost logic",
+      "Belegkette": "Evidence chain",
+      "Keine Belegkette": "No evidence chain",
+      "Kein Nachweis": "No evidence",
+      "Empfohlene nächste Aktion": "Recommended next action",
+      "Aufgabe erstellen": "Create task",
+      "Kritisch": "Critical",
+      "Offen": "Open",
+      "LV-Auszug": "BoQ extract",
+      "Anordnung / Protokoll": "Instruction / minutes",
+      "KI-Klassifizierung simuliert · keine echte Verarbeitung":
+        "AI classification simulated · no real processing",
       "Neu starten": "Start over",
       "AUTO: GPS · ZEIT · TIEFE": "AUTO: GPS · TIME · DEPTH",
       "app.nachweis.bau/nachtraege": "app.nachweis.bau/change-orders",
