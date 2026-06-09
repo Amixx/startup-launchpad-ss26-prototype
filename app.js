@@ -274,6 +274,9 @@ function render() {
           }
         } else {
           el.classList.remove("live-cursor");
+          el.closest(".voice-record-container")
+            ?.querySelector(".mic-container")
+            ?.classList.add("is-finished");
           clearInterval(state.transcriptInterval);
           state.transcriptInterval = null;
         }
@@ -409,19 +412,11 @@ function voiceCapture() {
       </div>
       <div class="voice-record-container">
         <div class="voice-status-label">Aufnahme läuft...</div>
-        
-        <div class="waveform">
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-        </div>
 
         <div class="mic-container">
-          <div class="mic-pulse-ring"></div>
+          <div class="mic-voice-ring ring-a"></div>
+          <div class="mic-voice-ring ring-b"></div>
+          <div class="mic-voice-ring ring-c"></div>
           <div class="mic-btn" role="img" aria-label="Recording in progress">
             ⏹️
           </div>
