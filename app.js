@@ -4,37 +4,42 @@ const state = {
   legalResolved: false,
   exported: false,
   lastSilo: null,
+  transcriptInterval: null,
+  processingTimeout: null,
+  toggledActions: {},
 };
 
 const screens = [
   { id: "s0", silo: "intro", number: "00", render: titleScreen },
   { id: "s1", silo: "site", number: "01", render: siteHome },
-  { id: "s2", silo: "site", number: "02", render: siteCapture },
-  { id: "s3", silo: "site", number: "03", render: siteGuided },
-  { id: "s4", silo: "site", number: "04", render: siteConfirm },
-  {
-    id: "s5",
-    silo: "commercial",
-    number: "05",
-    render: commercialDashboard,
-  },
-  { id: "s6", silo: "commercial", number: "06", render: deviationHero },
+  { id: "s2", silo: "site", number: "02", render: voiceCapture },
+  { id: "s3", silo: "site", number: "02b", render: aiProcessing },
+  { id: "s4", silo: "site", number: "03", render: aiSummaryActions },
+  { id: "s5", silo: "site", number: "04", render: siteCapture },
+  { id: "s6", silo: "site", number: "05", render: siteConfirm },
   {
     id: "s7",
     silo: "commercial",
-    number: "07",
+    number: "06",
+    render: commercialDashboard,
+  },
+  { id: "s8", silo: "commercial", number: "07", render: deviationHero },
+  {
+    id: "s9",
+    silo: "commercial",
+    number: "08",
     render: missingProofPricing,
   },
   {
-    id: "s8",
+    id: "s10",
     silo: "commercial",
-    number: "08",
+    number: "09",
     render: commercialConfirm,
   },
-  { id: "s9", silo: "legal", number: "09", render: legalQueue },
-  { id: "s10", silo: "legal", number: "10", render: legalReview },
-  { id: "s11", silo: "legal", number: "11", render: signoffExport },
-  { id: "s12", silo: "recap", number: "12", render: recapScreen },
+  { id: "s11", silo: "legal", number: "10", render: legalQueue },
+  { id: "s12", silo: "legal", number: "11", render: legalReview },
+  { id: "s13", silo: "legal", number: "12", render: signoffExport },
+  { id: "s14", silo: "recap", number: "13", render: recapScreen },
 ];
 
 const stage = document.querySelector("#stage");
@@ -126,6 +131,14 @@ function renderShell() {
 
 function render() {
   const screen = screens[state.current];
+  if (state.transcriptInterval) {
+    clearInterval(state.transcriptInterval);
+    state.transcriptInterval = null;
+  }
+  if (state.processingTimeout) {
+    clearTimeout(state.processingTimeout);
+    state.processingTimeout = null;
+  }
   const silo = baseSilo(screen.silo);
   const isHandoff = state.lastSilo !== null && state.lastSilo !== silo;
   state.lastSilo = silo;
@@ -170,7 +183,50 @@ function render() {
       exportPdf();
     }),
   );
+  stage.querySelectorAll("[data-toggle-action]").forEach((el) => {
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const actionId = el.dataset.toggleAction;
+      if (!state.toggledActions) {
+        state.toggledActions = {};
+      }
+      state.toggledActions[actionId] = !state.toggledActions[actionId];
+      render();
+    });
+  });
   applyLanguage();
+
+  if (screen.id === "s3") {
+    state.processingTimeout = setTimeout(() => {
+      next();
+    }, 1500);
+  }
+
+  if (screen.id === "s2") {
+    const el = document.getElementById("live-transcript-text");
+    if (el) {
+      const fullText = translateText(SCENARIO.voiceTranscript);
+      const words = fullText.split(" ");
+      let currentWordIndex = 0;
+      el.textContent = "";
+      el.classList.add("live-cursor");
+
+      state.transcriptInterval = setInterval(() => {
+        if (currentWordIndex < words.length) {
+          el.textContent += (currentWordIndex === 0 ? "" : " ") + words[currentWordIndex];
+          currentWordIndex++;
+          const box = el.closest(".voice-transcript");
+          if (box) {
+            box.scrollTop = box.scrollHeight;
+          }
+        } else {
+          el.classList.remove("live-cursor");
+          clearInterval(state.transcriptInterval);
+          state.transcriptInterval = null;
+        }
+      }, 100);
+    }
+  }
 }
 
 function baseSilo(silo) {
@@ -214,11 +270,11 @@ function updateRail(screen) {
 }
 
 function next() {
-  if (screens[state.current].id === "s7" && !state.proofsResolved) {
+  if (screens[state.current].id === "s9" && !state.proofsResolved) {
     state.proofsResolved = true;
     return render();
   }
-  if (screens[state.current].id === "s10" && !state.legalResolved) {
+  if (screens[state.current].id === "s12" && !state.legalResolved) {
     state.legalResolved = true;
     return render();
   }
@@ -229,11 +285,11 @@ function next() {
 
 function prev() {
   // Mirror the in-place resolves so every "next" step is undoable with "back".
-  if (screens[state.current].id === "s7" && state.proofsResolved) {
+  if (screens[state.current].id === "s9" && state.proofsResolved) {
     state.proofsResolved = false;
     return render();
   }
-  if (screens[state.current].id === "s10" && state.legalResolved) {
+  if (screens[state.current].id === "s12" && state.legalResolved) {
     state.legalResolved = false;
     return render();
   }
@@ -312,11 +368,11 @@ function siteHome() {
       </div>
       <button
         class="btn"
-        style="width:100%;height:78px;font-size:18px"
+        style="width:100%;height:78px;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px"
         type="button"
         data-next
       >
-        + Ereignis erfassen
+        <span>🎙️</span> Abweichung melden
       </button>
       <h3 style="margin-top:22px">Heute</h3>
       <div class="event-list">
@@ -330,6 +386,190 @@ function siteHome() {
   );
 }
 
+function voiceCapture() {
+  return phone(
+    html`<div class="phone-head">
+        <div>
+          <div class="kicker">Sprachaufzeichnung</div>
+          <h2 class="phone-title">Beschreibe die Abweichung</h2>
+        </div>
+        ${chip("NEU", "flag")}
+      </div>
+      <div class="voice-record-container">
+        <div class="voice-status-label">Aufnahme läuft...</div>
+        
+        <div class="waveform">
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+          <span class="wave-bar"></span>
+        </div>
+
+        <div class="mic-container">
+          <div class="mic-pulse-ring"></div>
+          <button class="mic-btn" type="button" data-next aria-label="Stop recording">⏹️</button>
+        </div>
+
+        <div class="voice-transcript">
+          <p class="mono" id="live-transcript-text"></p>
+        </div>
+
+        <button class="btn" style="width:100%" type="button" data-next>
+          Sprachaufzeichnung beenden
+        </button>
+      </div>`
+  );
+}
+
+function aiProcessing() {
+  return phone(
+    html`<div class="ai-processing-container">
+      <div class="processing-spinner-box">
+        <div class="spinner-ring"></div>
+        <span class="system-badge-pulsing">✨ Strukturierung...</span>
+      </div>
+      <div class="processing-info" style="text-align: center; margin-top: 24px;">
+        <div class="kicker">Sprachaufnahme wird verarbeitet...</div>
+        <h3 class="phone-title" style="margin-top: 8px; font-size: 18px;">Analyse läuft...</h3>
+      </div>
+    </div>`
+  );
+}
+
+function aiSummaryActions() {
+  const sum = SCENARIO.aiSummary;
+
+  const locationHtml = `
+    <div style="font-size: 11px; text-align: left; line-height: 1.4;">
+      <div><strong>Bauteil:</strong> ${sum.location.bauteil}</div>
+      <div><strong>Geschoss:</strong> ${sum.location.geschoss}</div>
+      <div><strong>Achse:</strong> ${sum.location.achse}</div>
+    </div>
+  `;
+
+  const spiegelHtml = `
+    <div class="soll-ist-compare">
+      <div class="compare-row soll">
+        <span class="compare-label">Soll</span>
+        <span class="compare-val">${sum.spiegel.soll}</span>
+      </div>
+      <div class="compare-row ist">
+        <span class="compare-label">Ist</span>
+        <span class="compare-val">${sum.spiegel.ist}</span>
+      </div>
+    </div>
+  `;
+
+  let causeLabel = sum.ursache;
+  let causeType = "flag";
+  if (sum.ursache === "ag_instruction") {
+    causeLabel = "Anordnung durch AG / Architekt";
+    causeType = "blue";
+  } else if (sum.ursache === "changed_conditions") {
+    causeLabel = "Geänderte Gegebenheiten vor Ort";
+    causeType = "flag";
+  } else if (sum.ursache === "plan_contradiction") {
+    causeLabel = "Widerspruch in Planungsunterlagen";
+    causeType = "flag";
+  } else if (sum.ursache === "other") {
+    causeLabel = "Sonstiges";
+    causeType = "";
+  }
+  const causeHtml = chip(causeLabel, causeType);
+
+  let termLabel = "";
+  let termType = "ok";
+  if (sum.terminauswirkung.status === "delay") {
+    termLabel = `${sum.terminauswirkung.duration} Verzögerung erwartet`;
+    termType = "flag";
+  } else {
+    termLabel = "Keine Verzögerung";
+    termType = "ok";
+  }
+  const termHtml = chip(termLabel, termType);
+
+  const rows = [
+    { label: "Was", val: sum.what },
+    { label: "Verortung", val: locationHtml },
+    { label: "Soll-Ist-Abgleich", val: spiegelHtml },
+    { label: "Ursache", val: causeHtml },
+    { label: "Anordnung", val: sum.instruction },
+    { label: "Termin", val: termHtml }
+  ];
+
+  const summaryRows = rows.map(row => `
+    <div class="summary-row">
+      <div class="summary-label">${row.label}</div>
+      <div class="summary-val">${row.val}</div>
+    </div>
+  `).join('');
+
+  const actionItems = SCENARIO.smartActions.map(action => {
+    if (action.auto) {
+      return `<div class="action-item is-auto">
+        <div class="action-item-left">
+          <span class="action-item-icon">${action.icon}</span>
+          <span>${action.task}</span>
+        </div>
+        <div class="action-badge auto">${action.source}</div>
+        <span class="action-status-icon">✓</span>
+      </div>`;
+    } else {
+      const isPhoto = action.id === "action-photo";
+      if (isPhoto) {
+        return `<div class="action-item is-open" data-next style="cursor:pointer">
+          <div class="action-item-left">
+            <span class="action-item-icon">${action.icon}</span>
+            <strong>${action.task}</strong>
+          </div>
+          <span class="action-status-icon">▢</span>
+        </div>`;
+      } else {
+        return `<div class="action-item is-open">
+          <div class="action-item-left">
+            <span class="action-item-icon">${action.icon}</span>
+            <strong>${action.task}</strong>
+          </div>
+          <span class="action-status-icon">▢</span>
+        </div>`;
+      }
+    }
+  }).join('');
+
+  return phone(
+    html`<div class="ai-container">
+      <div class="ai-header">
+        <div class="kicker">Geführte Strukturierung</div>
+        <span class="ai-badge">✨ Strukturierter Entwurf</span>
+      </div>
+      
+      <div class="ai-summary-card">
+        <div class="summary-title">
+          <h3>Mögliche Abweichung</h3>
+          ${chip(SCENARIO.bausoll.lv, "blue")}
+        </div>
+        <div class="summary-grid">
+          ${summaryRows}
+        </div>
+      </div>
+
+      <div class="smart-actions-section">
+        <div class="smart-actions-title">Erforderliche Nachweise</div>
+        <div class="checklist">
+          ${actionItems}
+        </div>
+      </div>
+
+      <button class="btn" style="width:100%" type="button" data-next>
+        Foto aufnehmen
+      </button>
+    </div>`
+  );
+}
+
 function rockSvg() {
   return `<img src="excavation-evidence.png" alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab" loading="eager" /><span class="camera__stamp">AUTO: GPS · ZEIT · TIEFE</span>`;
 }
@@ -338,6 +578,9 @@ function siteCapture() {
   return html`<div class="frame-phone camera-phone">
     <div class="phone-glass">
       <div class="cam-view">
+        <div class="cam-task-banner">
+          <span>📷</span> Aufgabe: Foto der Felskante mit Maßstab
+        </div>
         <img
           src="excavation-evidence.png"
           alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab"
@@ -376,38 +619,18 @@ function siteCapture() {
   </div>`;
 }
 
-function siteGuided() {
-  return phone(
-    html`<div class="phone-head">
-        <div>
-          <div class="kicker">Geführte Strukturierung</div>
-          <h2 class="phone-title">Mögliche Abweichung erkannt</h2>
-        </div>
-        ${chip(SCENARIO.bausoll.lv, "blue")}
-      </div>
-      <p>
-        Das Ereignis passt zu
-        <strong>${SCENARIO.bausoll.description}</strong>. Dokumentiere jetzt,
-        was später prüffähig sein muss.
-      </p>
-      <div class="checklist">
-        ${SCENARIO.guidedChecks
-          .map(
-            (c, i) =>
-              `<div class="check ${c[1] || i > 1 ? "" : "open"}"><span>${c[0]}</span><b>${c[1] || i > 1 ? "✓" : "▢"}</b></div>`,
-          )
-          .join("")}
-      </div>
-      <div class="note-box">
-        <strong>Notiz:</strong> ${SCENARIO.note}<br /><span class="mono"
-          >${SCENARIO.bauist.order}</span
-        >
-      </div>
-      ${button("An Kaufmännisch übergeben")}`,
-  );
-}
-
 function siteConfirm() {
+  const actionItems = SCENARIO.smartActions.map(action => {
+    const isCompleted = true;
+    return `<div class="action-item ${isCompleted ? 'is-auto' : 'is-open'}" style="padding: 6px 12px; font-size: 11px;">
+      <div class="action-item-left">
+        <span class="action-item-icon">${action.icon}</span>
+        <span>${action.task}</span>
+      </div>
+      <span class="action-status-icon">${isCompleted ? '✓' : '▢'}</span>
+    </div>`;
+  }).join('');
+
   return phone(
     html`<div class="phone-head">
         <div>
@@ -416,16 +639,16 @@ function siteConfirm() {
         </div>
         ${chip("OK", "ok")}
       </div>
-      <div class="camera" style="height:230px">${rockSvg()}</div>
-      <div class="mini-panel" style="margin-top:14px">
-        <strong>${SCENARIO.title}</strong>
-        <p>${SCENARIO.oneLine}</p>
-        <div class="metadata-grid">
-          ${chip(SCENARIO.bauist.depth, "flag")}
-          ${chip(SCENARIO.bauist.order, "ok")}
+      <div class="camera" style="height:140px">${rockSvg()}</div>
+      
+      <div style="margin: 12px 0 16px;">
+        <div class="smart-actions-title" style="font-size: 9px; margin-bottom: 6px;">Vollständiger Nachweis (100%)</div>
+        <div class="checklist" style="gap: 4px;">
+          ${actionItems}
         </div>
       </div>
-      ${button("Weiter")}`,
+
+      ${button("Weiter")}`
   );
 }
 
