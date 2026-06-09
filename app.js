@@ -70,6 +70,10 @@ function chip(text, type = "") {
   return `<span class="chip ${type}">${text}</span>`;
 }
 
+function button(text, attrs = "data-next") {
+  return `<button class="btn" type="button" ${attrs}>${text}</button>`;
+}
+
 function translateText(text) {
   if (currentLanguage === "de") return text;
   return Object.entries(I18N.en.replace)
