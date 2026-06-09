@@ -272,7 +272,7 @@ function exportPdf() {
 function titleScreen() {
   return html`<div class="title-card">
     <div>
-      <div class="kicker" style="color:#82c7ff">Technischer Nachtrag</div>
+      <div class="kicker">Technischer Nachtrag</div>
       <h1>${SCENARIO.product.name}</h1>
       <div class="subtitle">${SCENARIO.product.tagline}</div>
       <p>${SCENARIO.product.context} ${SCENARIO.oneLine}</p>
@@ -282,15 +282,15 @@ function titleScreen() {
       ${button("Starten", "data-next")}
     </div>
     <div class="blueprint-card">
-      <div class="kicker" style="color:#82c7ff">Aktueller Nachtrag</div>
-      <h2 style="color:#fff">${SCENARIO.title}</h2>
+      <div class="kicker">Aktueller Nachtrag</div>
+      <h2>${SCENARIO.title}</h2>
       <p>${SCENARIO.project}<br />${SCENARIO.workPackage}</p>
       <div class="metadata-grid">
         ${chip(SCENARIO.claimId, "blue")} ${chip(SCENARIO.bausoll.lv, "blue")}
         ${chip(SCENARIO.bauist.extraQuantity, "flag")}
         ${chip(SCENARIO.pricing.total, "ok")}
       </div>
-      <p class="mono" style="color:#dff1ff;margin:16px 0 0">
+      <p class="mono" style="margin:16px 0 0">
         Pfeiltasten ← → oder klicken
       </p>
     </div>
@@ -431,7 +431,7 @@ function siteConfirm() {
 
 // <!-- ============ SILO 2: KAUFMÄNNISCH (screens 5–8) ============ -->
 function browser(content, url = "app.nachweis.bau/nachtraege", laptop = false) {
-  return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(243,245,247,.58)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
+  return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(14,26,36,.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
 }
 
 function commercialDashboard() {
@@ -773,7 +773,7 @@ function signoffExport() {
 function recapScreen() {
   return html`<div class="title-card">
     <div>
-      <div class="kicker" style="color:#82c7ff">Abschluss</div>
+      <div class="kicker">Abschluss</div>
       <h1 style="font-size:clamp(42px,6vw,78px)">Ein lückenloser Nachweis.</h1>
       <p>
         Drei Rollen, drei Geräte, ein verbundener Nachtrag — von der Felskante
