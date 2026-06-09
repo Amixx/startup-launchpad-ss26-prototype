@@ -537,8 +537,8 @@ function pricingEvidenceMap() {
     const [qVal, qUnit = "–"] = r.quantity.split(" ");
     const shortDesc = r.description.length > 28 ? r.description.slice(0, 26) + "…" : r.description;
     const riskChip = r.risk === "red"
-      ? chip("Angreifbar", "flag")
-      : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c;white-space:nowrap">Teilweise belegt</span>`;
+      ? chip("Kritisch", "flag")
+      : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c;white-space:nowrap">Offen</span>`;
     const evidenceChips = r.evidence.length
       ? r.evidence.map((e) => chip(evidenceLabels[e] ?? e, "blue")).join(" ")
       : chip("Kein Nachweis", "flag");
@@ -563,7 +563,7 @@ function pricingEvidenceMap() {
     </tr>`;
   }).join("");
 
-  const selRiskChip = sel.risk === "red" ? chip("Angreifbar", "flag") : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Teilweise belegt</span>`;
+  const selRiskChip = sel.risk === "red" ? chip("Kritisch", "flag") : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`;
   const selEvidenceChips = sel.evidence.length
     ? sel.evidence.map((e) => chip(evidenceLabels[e] ?? e, "blue")).join(" ")
     : chip("Kein Nachweis", "flag");
@@ -574,49 +574,59 @@ function pricingEvidenceMap() {
       <div class="kicker">Pricing Evidence Map</div>
       <h2>der Höhe nach</h2>
       <p>Jede Kostenzeile muss der Höhe nach belegbar sein.</p>
-      <div class="kpis" style="margin-bottom:18px">
+      <div class="kpis" style="margin-bottom:8px">
         <div class="mini-panel kpi">
           <span class="mono">Nachtragssumme netto</span>
           <strong>${SCENARIO.demoWorkflow.pricingTotal}</strong>
         </div>
         <div class="mini-panel kpi">
-          <span class="mono">Angreifbare Zeilen</span>
-          <strong style="color:var(--flag)">${redCount} rot · ${yellowCount} gelb</strong>
+          <span class="mono">Review-Status</span>
+          <strong style="color:var(--flag)">1 kritisch · 6 zu prüfen</strong>
         </div>
         <div class="mini-panel kpi">
-          <span class="mono">Zeilen ohne Nachweis</span>
-          <strong style="color:var(--flag)">${missingCount}</strong>
+          <span class="mono">Nächste Aktion</span>
+          <strong style="color:var(--flag)">P06 klären</strong>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr>
-              <th>ID</th><th>Kategorie</th><th>Beschreibung</th>
-              <th>Menge</th><th>Einheit</th><th>EP / Satz</th><th>Betrag</th>
-              <th>Nachweise</th><th>Risiko</th><th></th>
-            </tr></thead>
-            <tbody>${tableRows}</tbody>
-          </table>
+      <p class="mono" style="font-size:11px;color:var(--muted);margin:0 0 16px">Nachweis prüft nicht nur die Summe, sondern jede Kostenzeile gegen Menge, Preisbasis und Belegkette.</p>
+      <div style="overflow-x:auto;margin-bottom:16px">
+        <table>
+          <thead><tr>
+            <th>ID</th><th>Kategorie</th><th>Beschreibung</th>
+            <th>Menge</th><th>Einheit</th><th>EP / Satz</th><th>Betrag</th>
+            <th>Nachweise</th><th>Prüfstatus</th><th></th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+      <div class="mini-panel" style="border-left:3px solid ${borderColor};padding-left:16px">
+        <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em">Aktuell geprüft</p>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px">
+          <strong>${sel.id} · ${sel.description}</strong>
+          ${selRiskChip}
         </div>
-        <div class="mini-panel" style="border-left:3px solid ${borderColor};padding-left:14px;position:sticky;top:0">
-          <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">Aktuell geprüft</p>
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px">
-            <strong style="font-size:13px">${sel.id} · ${sel.description}</strong>
-            ${selRiskChip}
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:16px">
+          <div>
+            <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 3px">1. Kostenlogik</p>
+            <p class="mono" style="margin:0">${sel.quantity} × ${sel.unitRate} = <strong>${sel.amount}</strong></p>
+            <p style="margin:4px 0 0;font-size:12px;color:var(--muted)">${sel.priceBasis}</p>
           </div>
-          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Kostenlogik</p>
-          <p style="margin:0 0 10px" class="mono">${sel.quantity} × ${sel.unitRate} = <strong>${sel.amount}</strong></p>
-          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Preisbasis</p>
-          <p style="margin:0 0 8px;font-size:13px">${sel.priceBasis}</p>
-          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 4px">Verknüpfte Nachweise</p>
-          <div style="margin-bottom:10px">${selEvidenceChips}</div>
-          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Warum angreifbar?</p>
-          <p style="margin:0 0 10px;font-size:13px">${sel.weakness}</p>
-          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Was fehlt?</p>
-          <p style="margin:0 0 10px;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>
-          <p class="mono" style="color:var(--muted);font-size:11px;margin:0">Diese Kostenzeile muss der Höhe nach durch Menge, Preisbasis und Belegkette nachvollziehbar sein.</p>
+          <div>
+            <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 5px">2. Belegkette</p>
+            <p class="mono" style="font-size:12px;color:#82c7ff;margin:0 0 6px">${sel.evidence.length ? sel.evidence.map((e) => evidenceLabels[e] ?? e).join(" → ") + ` → Kostenzeile ${sel.id}` : `Keine Belegkette → Kostenzeile ${sel.id}`}</p>
+            <div>${selEvidenceChips}</div>
+          </div>
+          <div>
+            <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 3px">3. Bewertung der Prüfbarkeit</p>
+            <p style="margin:0;font-size:13px">${sel.weakness}</p>
+          </div>
         </div>
+        <div style="background:rgba(255,200,60,.07);border:1px solid rgba(255,200,60,.2);border-radius:6px;padding:12px 14px;margin-bottom:12px">
+          <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em">Empfohlene nächste Aktion</p>
+          <p style="margin:0 0 10px;color:var(--ok)">→ ${sel.missingProof}</p>
+          <button class="btn" type="button" style="background:transparent;border-color:rgba(130,199,255,.3);color:#82c7ff;font-size:12px;padding:5px 14px">Aufgabe erstellen</button>
+        </div>
+        <p class="mono" style="color:var(--muted);font-size:11px;margin:0">Diese Kostenzeile muss der Höhe nach durch Menge, Preisbasis und Belegkette nachvollziehbar sein.</p>
       </div>
       <br />${button("Weiter →")}
     </div>`,
