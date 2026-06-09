@@ -4,6 +4,8 @@ const state = {
   legalResolved: false,
   exported: false,
   lastSilo: null,
+  voiceMemoRecorded: false,
+  photoCaptured: false,
 };
 
 const screens = [
@@ -170,6 +172,20 @@ function render() {
       exportPdf();
     }),
   );
+  stage.querySelectorAll("[data-voice-memo]").forEach((el) =>
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      state.voiceMemoRecorded = true;
+      render();
+    }),
+  );
+  stage.querySelectorAll("[data-capture-photo]").forEach((el) =>
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      state.photoCaptured = true;
+      render();
+    }),
+  );
   applyLanguage();
 }
 
@@ -248,6 +264,8 @@ function restart() {
   state.legalResolved = false;
   state.exported = false;
   state.lastSilo = null;
+  state.voiceMemoRecorded = false;
+  state.photoCaptured = false;
   toast.classList.remove("is-visible");
   render();
 }
@@ -335,45 +353,74 @@ function rockSvg() {
 }
 
 function siteCapture() {
-  return html`<div class="frame-phone camera-phone">
-    <div class="phone-glass">
-      <div class="cam-view">
-        <img
-          src="excavation-evidence.png"
-          alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab"
-          loading="eager"
-        />
-        <div class="cam-top">
-          <span>09:14</span>
-          <div class="cam-top-ctrls"><span>⚡ Auto</span><span>HDR</span></div>
+  if (!state.photoCaptured) {
+    return html`<div class="frame-phone camera-phone">
+      <div class="phone-glass">
+        <div class="cam-view">
+          <img
+            src="excavation-evidence.png"
+            alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab"
+            loading="eager"
+          />
+          <div class="cam-top">
+            <span>09:14</span>
+            <div class="cam-top-ctrls"><span>⚡ Auto</span><span>HDR</span></div>
+          </div>
+          <div class="cam-reticle"></div>
+          <div class="cam-flag">${SCENARIO.eventId}</div>
+          <div class="cam-geo">
+            <span class="cam-geo-dot"></span>
+            <div>
+              ${SCENARIO.metadata[0]}<br />${SCENARIO.metadata[1]} ·
+              ${SCENARIO.metadata[3]}<br />${SCENARIO.metadata[4]}
+            </div>
+          </div>
         </div>
-        <div class="cam-reticle"></div>
-        <div class="cam-flag">${SCENARIO.eventId}</div>
-        <div class="cam-geo">
-          <span class="cam-geo-dot"></span>
-          <div>
-            ${SCENARIO.metadata[0]}<br />${SCENARIO.metadata[1]} ·
-            ${SCENARIO.metadata[3]}<br />${SCENARIO.metadata[4]}
+        <div class="cam-bar">
+          <div class="cam-modes">
+            <span>VIDEO</span><span class="is-active">FOTO</span><span>PANO</span>
+          </div>
+          <div class="cam-actions">
+            <span class="cam-thumb"></span>
+            <button
+              class="cam-shutter"
+              type="button"
+              data-capture-photo
+              aria-label="Shutter"
+            ></button>
+            <span class="cam-flip">⟳</span>
           </div>
         </div>
       </div>
-      <div class="cam-bar">
-        <div class="cam-modes">
-          <span>VIDEO</span><span class="is-active">FOTO</span><span>PANO</span>
+    </div>`;
+  }
+
+  const waveform = Array.from({length: 18}, (_, i) =>
+    `<span style="height:${8 + Math.round(Math.abs(Math.sin(i * 1.1) * 20))}px"></span>`
+  ).join('');
+
+  return phone(
+    html`<div class="phone-head">
+        <div>
+          <div class="kicker">Foto erfasst · Kontext ergänzen</div>
+          <h2 class="phone-title">${SCENARIO.eventId}</h2>
         </div>
-        <div class="cam-actions">
-          <span class="cam-thumb"></span>
-          <button
-            class="cam-shutter"
-            type="button"
-            data-next
-            aria-label="Shutter"
-          ></button>
-          <span class="cam-flip">⟳</span>
-        </div>
+        ${chip("OK", "ok")}
       </div>
-    </div>
-  </div>`;
+      <div class="camera" style="height:160px">${rockSvg()}</div>
+      <div class="metadata-grid" style="margin:10px 0">
+        ${SCENARIO.metadata.map((m) => chip(m, "blue")).join(" ")}
+      </div>
+      <p style="margin:6px 0 10px;font-size:13px">${SCENARIO.project} · ${SCENARIO.workPackage}</p>
+      ${state.voiceMemoRecorded
+        ? `<div class="voice-memo-recorded">
+            <div class="waveform" aria-hidden="true">${waveform}</div>
+            <p class="voice-transcript">${SCENARIO.demoWorkflow.voiceTranscript}</p>
+           </div>`
+        : `<button class="btn" type="button" data-voice-memo style="width:100%;margin:0 0 10px">🎙 Sprachnotiz aufnehmen</button>`
+      }
+      ${button("An Kaufmännisch übergeben")}`,
+  );
 }
 
 function siteGuided() {
