@@ -14,6 +14,7 @@ const screens = [
   { id: "s2", silo: "site", number: "02", render: siteCapture },
   { id: "s3", silo: "site", number: "03", render: siteGuided },
   { id: "s4", silo: "site", number: "04", render: siteConfirm },
+  { id: "s4b", silo: "site", number: "04b", render: evidenceGraph },
   {
     id: "s5",
     silo: "commercial",
@@ -473,6 +474,42 @@ function siteConfirm() {
         </div>
       </div>
       ${button("Weiter")}`,
+  );
+}
+
+function evidenceGraph() {
+  const cards = SCENARIO.demoWorkflow.evidenceCards
+    .map((c) => {
+      const groundOrHeight = c.supports === "dem Grunde nach"
+        ? `<span class="chip blue">dem Grunde nach</span>`
+        : `<span class="chip ok">der Höhe nach</span>`;
+      const noteHtml = c.note
+        ? `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`
+        : "";
+      return `<div class="mini-panel" style="display:flex;flex-direction:column;gap:4px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span class="chip blue">${c.id}</span>${groundOrHeight}
+        </div>
+        <strong>${c.title}</strong>
+        <span class="mono" style="color:var(--muted);font-size:12px">${c.type} · ${c.role}</span>
+        ${noteHtml}
+      </div>`;
+    })
+    .join("");
+
+  return browser(
+    html`<div class="panel">
+      <div class="kicker">Evidence Graph · AI-Klassifizierung</div>
+      <h2>Baustellenereignis strukturiert</h2>
+      <p>Das Baustellenereignis wurde dem Projekt zugeordnet und als Nachtragsnachweis strukturiert.</p>
+      <div class="pricing-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+        ${cards}
+      </div>
+      <p class="mono" style="margin-top:18px;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
+        AI-Klassifizierung simuliert · keine echte Verarbeitung
+      </p>
+      <br />${button("Weiter →")}
+    </div>`,
   );
 }
 
