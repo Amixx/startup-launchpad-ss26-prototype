@@ -338,29 +338,19 @@ function phone(content) {
 
 function siteHome() {
   return phone(
-    html`<div class="phone-head">
-        <div>
-          <div class="kicker">${SCENARIO.project}</div>
-          <h2 class="phone-title">Ereignisse Baustelle</h2>
+    html`<div class="site-home">
+        <div class="phone-head">
+          <div>
+            <div class="kicker">${SCENARIO.project}</div>
+            <h2 class="phone-title">Ereignisse Baustelle</h2>
+          </div>
+          ${chip("Polier", "blue")}
         </div>
-        ${chip("Polier", "blue")}
-      </div>
-      <button
-        class="btn"
-        style="width:100%;height:78px;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px"
-        type="button"
-        data-next
-      >
-        <span>🎙️</span> Abweichung melden
-      </button>
-      <h3 style="margin-top:22px">Heute</h3>
-      <div class="event-list">
-        ${SCENARIO.siteEvents
-          .map(
-            (e) =>
-              `<div class="event-row"><div class="event-icon">${e[0]}</div><div><strong>${e[1]}</strong><br><span class="mono" style="color:var(--muted)">${SCENARIO.workPackage}</span></div>${chip(e[2], e[2] === "Neu" ? "flag" : "")}</div>`,
-          )
-          .join("")}
+        <div class="site-home__action">
+          <button class="btn site-home__button" type="button" data-next>
+            <span>🎙️</span> Abweichung melden
+          </button>
+        </div>
       </div>`,
   );
 }
