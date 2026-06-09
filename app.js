@@ -1,6 +1,7 @@
 const state = {
   current: 0,
-  proofsResolved: false,
+  groundResolved: false,
+  heightResolved: false,
   legalResolved: false,
   exported: false,
   lastSilo: null,
@@ -27,20 +28,14 @@ const screens = [
   { id: "s8b", silo: "commercial", number: "07b", render: evidenceGraph },
   { id: "s8c", silo: "commercial", number: "07c", render: pricingEvidenceMap },
   {
-    id: "s9",
-    silo: "commercial",
-    number: "08",
-    render: missingProofPricing,
-  },
-  {
     id: "s10",
     silo: "commercial",
-    number: "09",
+    number: "08",
     render: commercialConfirm,
   },
-  { id: "s11", silo: "legal", number: "10", render: legalQueue },
-  { id: "s12", silo: "legal", number: "11", render: legalReview },
-  { id: "s13", silo: "legal", number: "12", render: signoffExport },
+  { id: "s11", silo: "legal", number: "09", render: legalQueue },
+  { id: "s12", silo: "legal", number: "10", render: legalReview },
+  { id: "s13", silo: "legal", number: "11", render: signoffExport },
 ];
 
 const stage = document.querySelector("#stage");
@@ -181,10 +176,16 @@ function render() {
       restart();
     }),
   );
-  stage.querySelectorAll("[data-resolve-proofs]").forEach((el) =>
+  stage.querySelectorAll("[data-resolve-ground]").forEach((el) =>
     el.addEventListener("click", (event) => {
       event.stopPropagation();
-      resolveProofs();
+      resolveGround();
+    }),
+  );
+  stage.querySelectorAll("[data-resolve-height]").forEach((el) =>
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      resolveHeight();
     }),
   );
   stage.querySelectorAll("[data-resolve-legal]").forEach((el) =>
@@ -287,8 +288,12 @@ function updateRail(screen) {
 }
 
 function next() {
-  if (screens[state.current].id === "s9" && !state.proofsResolved) {
-    state.proofsResolved = true;
+  if (screens[state.current].id === "s8b" && !state.groundResolved) {
+    state.groundResolved = true;
+    return render();
+  }
+  if (screens[state.current].id === "s8c" && !state.heightResolved) {
+    state.heightResolved = true;
     return render();
   }
   if (screens[state.current].id === "s12" && !state.legalResolved) {
@@ -302,8 +307,12 @@ function next() {
 
 function prev() {
   // Mirror the in-place resolves so every "next" step is undoable with "back".
-  if (screens[state.current].id === "s9" && state.proofsResolved) {
-    state.proofsResolved = false;
+  if (screens[state.current].id === "s8c" && state.heightResolved) {
+    state.heightResolved = false;
+    return render();
+  }
+  if (screens[state.current].id === "s8b" && state.groundResolved) {
+    state.groundResolved = false;
     return render();
   }
   if (screens[state.current].id === "s12" && state.legalResolved) {
@@ -317,7 +326,8 @@ function prev() {
 
 function restart() {
   state.current = 0;
-  state.proofsResolved = false;
+  state.groundResolved = false;
+  state.heightResolved = false;
   state.legalResolved = false;
   state.exported = false;
   state.lastSilo = null;
@@ -326,9 +336,23 @@ function restart() {
   render();
 }
 
-function resolveProofs() {
-  state.proofsResolved = true;
+function resolveGround() {
+  state.groundResolved = true;
   render();
+}
+
+function resolveHeight() {
+  state.heightResolved = true;
+  render();
+}
+
+// Claim completeness climbs as the two commercial maps are completed:
+// 68 % captured on site → +14 entitlement evidence → +13 pricing evidence → 95 %.
+// Legal closes the final 5 % (the BL‑44 reference) downstream.
+function claimCompleteness() {
+  return (
+    68 + (state.groundResolved ? 14 : 0) + (state.heightResolved ? 13 : 0)
+  );
 }
 
 function resolveLegal() {
@@ -589,11 +613,16 @@ function evidenceGraph() {
   const cards = SCENARIO.demoWorkflow.evidenceCards;
   const groundCards = cards.filter((c) => c.supports === "dem Grunde nach");
   const heightCards = cards.filter((c) => c.supports === "der Höhe nach");
+  const resolved = state.groundResolved;
+  const pct = claimCompleteness();
 
   function renderCard(c) {
-    const noteHtml = c.note
-      ? `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`
-      : "";
+    let noteHtml = "";
+    if (c.note) {
+      noteHtml = resolved
+        ? `<p class="mono" style="color:var(--ok);font-size:11px;margin:6px 0 0">✓ Gegenzeichnung angefordert</p>`
+        : `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`;
+    }
     return `<div class="mini-panel">
       <div class="metadata-grid" style="margin-bottom:6px">
         ${chip(c.id, "blue")} ${chip(c.type, "")}
@@ -622,24 +651,49 @@ function evidenceGraph() {
           </div>
         </div>
       </div>
-      <br />${button("Weiter →")}
+      <p class="mono" style="margin:18px 0 5px">Vollständigkeit ${pct} %</p>
+      <div class="meter" style="--value:${pct}%"><span></span></div>
+      <br /><button
+        class="btn ${resolved ? "ok" : ""}"
+        type="button"
+        data-resolve-ground
+      >
+        ${resolved
+          ? "AG-Gegenzeichnung angefordert"
+          : "Fehlende Gegenzeichnung anfordern"}
+      </button>
+      ${button("Weiter →")}
     </div>`,
   );
 }
 
 function pricingEvidenceMap() {
   const rows = SCENARIO.demoWorkflow.pricingRows;
+  const resolved = state.heightResolved;
+  const pct = claimCompleteness();
+  // The red lump-sum row (P05) is the gap that "Fehlende Nachweise ergänzen" closes.
+  const isFixed = (r) => r.id === "P05" && resolved;
+
   const sel =
     rows.find((r) => r.id === state.selectedPricingRowId) ||
     rows.find((r) => r.risk === "red") ||
     rows[0];
+  const selFixed = isFixed(sel);
 
-  const borderColor = sel.risk === "red" ? "var(--flag)" : "#ffc83c";
+  const borderColor = selFixed
+    ? "var(--ok)"
+    : sel.risk === "red"
+      ? "var(--flag)"
+      : "#ffc83c";
 
   const costLines = rows
     .map((r) => {
       const isSelected = r.id === sel.id;
-      const dotColor = r.risk === "red" ? "var(--flag)" : "#ffc83c";
+      const dotColor = isFixed(r)
+        ? "var(--ok)"
+        : r.risk === "red"
+          ? "var(--flag)"
+          : "#ffc83c";
       return `<div
           data-pricing-row="${r.id}"
           style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;${isSelected ? "background:rgba(130,199,255,.1);outline:1px solid rgba(130,199,255,.4);" : ""}">
@@ -651,14 +705,22 @@ function pricingEvidenceMap() {
     })
     .join("");
 
-  const selEvidenceChips = sel.evidence.length
-    ? sel.evidence.map((e) => chip(e, "blue")).join(" ")
-    : chip("Kein Nachweis", "flag");
+  const selEvidenceChips = selFixed
+    ? chip("Aufgeschlüsselt", "ok")
+    : sel.evidence.length
+      ? sel.evidence.map((e) => chip(e, "blue")).join(" ")
+      : chip("Kein Nachweis", "flag");
 
-  const riskChip =
-    sel.risk === "red"
+  const riskChip = selFixed
+    ? chip("Belegt", "ok")
+    : sel.risk === "red"
       ? chip("Kritisch", "flag")
       : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`;
+
+  const detailBody = selFixed
+    ? `<p style="margin:0;color:var(--ok);font-size:13px">✓ ${sel.missingProof}</p>`
+    : `<p style="font-size:13px;margin:0 0 12px;color:var(--muted)">${sel.weakness}</p>
+       <p style="margin:0;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>`;
 
   return browser(
     html`<div class="panel">
@@ -673,9 +735,20 @@ function pricingEvidenceMap() {
             ${riskChip}
           </div>
           <div style="margin-bottom:10px">${selEvidenceChips}</div>
-          <p style="font-size:13px;margin:0 0 12px;color:var(--muted)">${sel.weakness}</p>
-          <p style="margin:0;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>
+          ${detailBody}
         </div>
+      </div>
+      <p class="mono" style="margin:18px 0 5px">Vollständigkeit ${pct} %</p>
+      <div class="meter" style="--value:${pct}%"><span></span></div>
+      <br /><button
+        class="btn ${resolved ? "ok" : ""}"
+        type="button"
+        data-resolve-height
+      >
+        ${resolved ? "Nachweise vollständig" : "Fehlende Nachweise ergänzen"}
+      </button>
+      <div class="sum" style="margin-top:14px">
+        Urkalkulation fortgeschrieben · Nachtragssumme ≈ ${SCENARIO.pricing.total}
       </div>
       <br />${button("Weiter →")}
     </div>`,
@@ -810,65 +883,6 @@ function deviationHero() {
         </aside>
       </div>
       <br />${button("Nachweise prüfen")}
-    </div>`,
-  );
-}
-
-function missingProofPricing() {
-  const resolved = state.proofsResolved;
-  return browser(
-    html`<div class="resolve-layout">
-      <div class="panel">
-        <h2>Nachweise vervollständigen</h2>
-        <div class="checklist">
-          ${SCENARIO.proofActions
-            .map(
-              (a) =>
-                `<div class="check ${resolved ? "" : "open"}"><span>${a}</span><b>${resolved ? "✓" : "▢"}</b></div>`,
-            )
-            .join("")}
-        </div>
-        <p class="mono" style="margin:16px 0 5px">
-          Vollständigkeit ${resolved ? "95" : "68"} %
-        </p>
-        <div class="meter" style="--value:${resolved ? "95" : "68"}%">
-          <span></span>
-        </div>
-        <br /><button
-          class="btn ${resolved ? "ok" : ""}"
-          type="button"
-          data-resolve-proofs
-        >
-          ${resolved ? "Nachweise vollständig" : "Fehlende Nachweise ergänzen"}
-        </button>
-      </div>
-      <div class="panel">
-        <h2>Urkalkulation-Fortschreibung</h2>
-        <div class="pricing-grid">
-          <div class="mini-panel">
-            <span class="mono">Neue Position</span>
-            <h3>${SCENARIO.pricing.newPosition}</h3>
-          </div>
-          <div class="mini-panel">
-            <span class="mono">Menge</span>
-            <h3>${SCENARIO.pricing.quantity}</h3>
-          </div>
-          <div class="mini-panel">
-            <span class="mono">abgeleiteter EP</span>
-            <h3>${SCENARIO.pricing.derivedEp}</h3>
-          </div>
-        </div>
-        <p>
-          ${SCENARIO.pricing.basis}: ${SCENARIO.pricing.devices}. Damit ist der
-          Nachtrag nicht nur dem Grunde nach plausibel, sondern
-          <strong>${SCENARIO.pricing.argument}</strong>.
-        </p>
-        <div class="sum">Nachtragssumme ≈ ${SCENARIO.pricing.total}</div>
-        <br />${button(
-          "Zur rechtlichen Prüfung übergeben",
-          resolved ? "data-next" : "data-resolve-proofs",
-        )}
-      </div>
     </div>`,
   );
 }
