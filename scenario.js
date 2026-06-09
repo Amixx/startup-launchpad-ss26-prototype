@@ -110,6 +110,23 @@ const SCENARIO = {
     "Menge/Kosten",
     "prüffähige Nachtragsakte",
   ],
+  demoWorkflow: {
+    voiceTranscript:
+      "Beim Aushub wurde unerwartet ein Stahlbetonfundamentrest angetroffen. Die Leistung ist im LV so nicht beschrieben. Wir mussten den Bereich freilegen, mit dem Hydraulikhammer zerkleinern, laden, abfahren und separat entsorgen.",
+    evidenceCards: [
+      { id: "A02", type: "LV-Auszug", title: "OZ 01.02.0030", role: "Bausoll", supports: "dem Grunde nach" },
+      { id: "A06", type: "Fotos", title: "Fotos Baustelle", role: "Bau-Ist", supports: "dem Grunde nach" },
+      { id: "A07", type: "E-Mail / Protokoll", title: "BÜ-Protokoll", role: "Trigger", supports: "dem Grunde nach", note: "no clean formal Anordnung" },
+      { id: "A10", type: "Aufmaß", title: "Aufmaß Stahlbetonrest", role: "Menge", supports: "der Höhe nach", note: "not AG-confirmed" },
+      { id: "A11", type: "Wiegeschein", title: "Wiegeschein / Entsorgung", role: "Kosten", supports: "der Höhe nach", note: "not explicitly linked to N01" },
+    ],
+    kblNotification: {
+      message: "Neues potenziell nachtragsrelevantes Ereignis erkannt.",
+      claimId: "N01",
+      sentAt: "17.04. · 08:42",
+      event: "E-118 · Unerwarteter Stahlbetonfundamentrest im Bereich Achse B-C",
+    },
+  },
 };
 
 const I18N = {
