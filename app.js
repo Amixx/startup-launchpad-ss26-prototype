@@ -6,6 +6,7 @@ const state = {
   lastSilo: null,
   transcriptInterval: null,
   processingTimeout: null,
+  hotspotTimeout: null,
   toggledActions: {},
   selectedPricingRowId: "P05",
 };
@@ -48,6 +49,17 @@ const rail = document.querySelector("#rail");
 const status = document.querySelector("#status");
 const readout = document.querySelector("#readout");
 const toast = document.querySelector("#toast");
+const hotspotSelector = [
+  "button:not([disabled])",
+  "[data-next]",
+  "[data-prev]:not([disabled])",
+  "[data-restart]",
+  "[data-resolve-proofs]",
+  "[data-resolve-legal]",
+  "[data-export]",
+  "[data-toggle-action]",
+  "[tabindex]",
+].join(",");
 
 function languageFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -74,6 +86,30 @@ function chip(text, type = "") {
 
 function button(text, attrs = "data-next") {
   return `<button class="btn" type="button" ${attrs}>${text}</button>`;
+}
+
+function isVisibleHotspot(el) {
+  const box = el.getBoundingClientRect();
+  return box.width > 0 && box.height > 0;
+}
+
+function clearHotspotHints() {
+  if (state.hotspotTimeout) {
+    clearTimeout(state.hotspotTimeout);
+    state.hotspotTimeout = null;
+  }
+  document
+    .querySelectorAll(".hotspot-hint")
+    .forEach((el) => el.classList.remove("hotspot-hint"));
+}
+
+function flashHotspots(targets = document.querySelectorAll(hotspotSelector)) {
+  clearHotspotHints();
+  const hotspots = [...targets].filter(isVisibleHotspot);
+  if (!hotspots.length) return;
+
+  hotspots.forEach((el) => el.classList.add("hotspot-hint"));
+  state.hotspotTimeout = setTimeout(clearHotspotHints, 1600);
 }
 
 function translateText(text) {
@@ -155,6 +191,7 @@ function render() {
     clearTimeout(state.processingTimeout);
     state.processingTimeout = null;
   }
+  clearHotspotHints();
   const silo = baseSilo(screen.silo);
   const isHandoff = state.lastSilo !== null && state.lastSilo !== silo;
   state.lastSilo = silo;
@@ -219,6 +256,8 @@ function render() {
   });
   applyLanguage();
 
+  setTimeout(() => flashHotspots(stage.querySelectorAll(hotspotSelector)), 260);
+
   if (screen.id === "s3") {
     state.processingTimeout = setTimeout(() => {
       next();
@@ -244,6 +283,9 @@ function render() {
           }
         } else {
           el.classList.remove("live-cursor");
+          el.closest(".voice-record-container")
+            ?.querySelector(".mic-container")
+            ?.classList.add("is-finished");
           clearInterval(state.transcriptInterval);
           state.transcriptInterval = null;
         }
@@ -377,20 +419,14 @@ function voiceCapture() {
       </div>
       <div class="voice-record-container">
         <div class="voice-status-label">Aufnahme läuft...</div>
-        
-        <div class="waveform">
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-          <span class="wave-bar"></span>
-        </div>
 
         <div class="mic-container">
-          <div class="mic-pulse-ring"></div>
-          <button class="mic-btn" type="button" data-next aria-label="Stop recording">⏹️</button>
+          <div class="mic-voice-ring ring-a"></div>
+          <div class="mic-voice-ring ring-b"></div>
+          <div class="mic-voice-ring ring-c"></div>
+          <div class="mic-btn" role="img" aria-label="Recording in progress">
+            ⏹️
+          </div>
         </div>
 
         <div class="voice-transcript">
@@ -1032,6 +1068,10 @@ document.querySelectorAll("[data-lang]").forEach((button) => {
     renderShell();
     render();
   });
+});
+document.addEventListener("click", (event) => {
+  if (event.target.closest(hotspotSelector)) return;
+  flashHotspots(stage.querySelectorAll(hotspotSelector));
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && event.target.closest("button")) return;
