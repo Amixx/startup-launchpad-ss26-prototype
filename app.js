@@ -422,62 +422,26 @@ function aiProcessing() {
 function aiSummaryActions() {
   const sum = SCENARIO.aiSummary;
 
-  const locationHtml = `
-    <div style="font-size: 11px; text-align: left; line-height: 1.4;">
-      <div><strong>Bauteil:</strong> ${sum.location.bauteil}</div>
-      <div><strong>Geschoss:</strong> ${sum.location.geschoss}</div>
-      <div><strong>Achse:</strong> ${sum.location.achse}</div>
-    </div>
-  `;
-
-  const spiegelHtml = `
-    <div class="soll-ist-compare">
-      <div class="compare-row soll">
-        <span class="compare-label">Soll</span>
-        <span class="compare-val">${sum.spiegel.soll}</span>
-      </div>
-      <div class="compare-row ist">
-        <span class="compare-label">Ist</span>
-        <span class="compare-val">${sum.spiegel.ist}</span>
-      </div>
-    </div>
-  `;
-
   let causeLabel = sum.ursache;
   let causeType = "flag";
-  if (sum.ursache === "ag_instruction") {
-    causeLabel = "Anordnung durch AG / Architekt";
-    causeType = "blue";
-  } else if (sum.ursache === "changed_conditions") {
-    causeLabel = "Geänderte Gegebenheiten vor Ort";
-    causeType = "flag";
-  } else if (sum.ursache === "plan_contradiction") {
-    causeLabel = "Widerspruch in Planungsunterlagen";
-    causeType = "flag";
-  } else if (sum.ursache === "other") {
-    causeLabel = "Sonstiges";
-    causeType = "";
-  }
-  const causeHtml = chip(causeLabel, causeType);
+  if (sum.ursache === "ag_instruction") { causeLabel = "Anordnung durch AG / Architekt"; causeType = "blue"; }
+  else if (sum.ursache === "changed_conditions") causeLabel = "Geänderte Gegebenheiten vor Ort";
+  else if (sum.ursache === "plan_contradiction") causeLabel = "Widerspruch in Planungsunterlagen";
+  else if (sum.ursache === "other") { causeLabel = "Sonstiges"; causeType = ""; }
 
-  let termLabel = "";
-  let termType = "ok";
-  if (sum.terminauswirkung.status === "delay") {
-    termLabel = `${sum.terminauswirkung.duration} Verzögerung erwartet`;
-    termType = "flag";
-  } else {
-    termLabel = "Keine Verzögerung";
-    termType = "ok";
-  }
-  const termHtml = chip(termLabel, termType);
+  const hasDelay = sum.terminauswirkung.status === "delay";
+  const termChip = chip(
+    hasDelay ? `${sum.terminauswirkung.duration} Verzögerung erwartet` : "Keine Verzögerung",
+    hasDelay ? "flag" : "ok",
+  );
 
   const rows = [
-    { label: "Was", val: sum.what },
-    { label: "Verortung", val: locationHtml },
-    { label: "Soll-Ist-Abgleich", val: spiegelHtml },
-    { label: "Ursache", val: causeHtml },
+    { label: "Soll-Ist-Abgleich", val: `<div class="soll-ist-compare">
+      <div class="compare-row soll"><span class="compare-label">Soll</span><span class="compare-val">${sum.spiegel.soll}</span></div>
+      <div class="compare-row ist"><span class="compare-label">Ist</span><span class="compare-val">${sum.spiegel.ist}</span></div>
+    </div>` },
+    { label: "Ursache", val: chip(causeLabel, causeType) },
     { label: "Anordnung", val: sum.instruction },
-    { label: "Termin", val: termHtml }
   ];
 
   const summaryRows = rows.map(row => `
@@ -487,49 +451,37 @@ function aiSummaryActions() {
     </div>
   `).join('');
 
-  const actionItems = SCENARIO.smartActions.map(action => {
-    if (action.auto) {
-      return `<div class="action-item is-auto">
+  const manualItems = SCENARIO.smartActions
+    .filter(a => !a.auto)
+    .map(action => {
+      const isPhoto = action.id === "action-photo";
+      return `<div class="action-item is-open"${isPhoto ? ' data-next style="cursor:pointer"' : ''}>
         <div class="action-item-left">
           <span class="action-item-icon">${action.icon}</span>
-          <span>${action.task}</span>
+          <strong>${action.task}</strong>
         </div>
-        <div class="action-badge auto">${action.source}</div>
-        <span class="action-status-icon">✓</span>
+        <span class="action-status-icon">▢</span>
       </div>`;
-    } else {
-      const isPhoto = action.id === "action-photo";
-      if (isPhoto) {
-        return `<div class="action-item is-open" data-next style="cursor:pointer">
-          <div class="action-item-left">
-            <span class="action-item-icon">${action.icon}</span>
-            <strong>${action.task}</strong>
-          </div>
-          <span class="action-status-icon">▢</span>
-        </div>`;
-      } else {
-        return `<div class="action-item is-open">
-          <div class="action-item-left">
-            <span class="action-item-icon">${action.icon}</span>
-            <strong>${action.task}</strong>
-          </div>
-          <span class="action-status-icon">▢</span>
-        </div>`;
-      }
-    }
-  }).join('');
+    }).join('');
+
+  const autoTasks = SCENARIO.smartActions.filter(a => a.auto).map(a => a.task).join(' · ');
+  const autoItem = `<div class="action-item is-auto">
+    <div class="action-item-left">
+      <span>${autoTasks}</span>
+    </div>
+    <div class="action-badge auto">Auto</div>
+    <span class="action-status-icon">✓</span>
+  </div>`;
 
   return phone(
     html`<div class="ai-container">
-      <div class="ai-header">
-        <div class="kicker">Geführte Strukturierung</div>
-        <span class="ai-badge">✨ Strukturierter Entwurf</span>
-      </div>
-      
       <div class="ai-summary-card">
         <div class="summary-title">
           <h3>Mögliche Abweichung</h3>
           ${chip(SCENARIO.bausoll.lv, "blue")}
+        </div>
+        <div class="metadata-grid" style="margin:8px 0 4px">
+          ${chip(sum.location.bauteil, "blue")} ${termChip}
         </div>
         <div class="summary-grid">
           ${summaryRows}
@@ -539,7 +491,8 @@ function aiSummaryActions() {
       <div class="smart-actions-section">
         <div class="smart-actions-title">Erforderliche Nachweise</div>
         <div class="checklist">
-          ${actionItems}
+          ${manualItems}
+          ${autoItem}
         </div>
       </div>
 
@@ -653,8 +606,7 @@ function evidenceGraph() {
 
   return browser(
     html`<div class="panel">
-      <div class="kicker">Evidence Graph · KI-Klassifizierung</div>
-      <h2>Baustellenereignis strukturiert</h2>
+      <h2>Nachweisstruktur · ${SCENARIO.claimId}</h2>
       <p>Das Baustellenereignis wurde klassifiziert und die Nachweise den Prüfkategorien zugeordnet.</p>
       <div class="resolve-layout">
         <div>
@@ -670,9 +622,6 @@ function evidenceGraph() {
           </div>
         </div>
       </div>
-      <p class="mono" style="margin-top:16px;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
-        KI-Klassifizierung simuliert · keine echte Verarbeitung
-      </p>
       <br />${button("Weiter →")}
     </div>`,
   );
@@ -685,92 +634,47 @@ function pricingEvidenceMap() {
     rows.find((r) => r.risk === "red") ||
     rows[0];
 
-  const evidenceLabels = {
-    A04: "A04 Urkalkulation",
-    A09: "A09 Regiebericht",
-    A10: "A10 Aufmaß",
-    A11: "A11 Wiegeschein",
-    A12: "A12 Kalkulation",
-  };
+  const borderColor = sel.risk === "red" ? "var(--flag)" : "#ffc83c";
 
   const costLines = rows
     .map((r) => {
       const isSelected = r.id === sel.id;
-      const riskChip =
-        r.risk === "red"
-          ? chip("Kritisch", "flag")
-          : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`;
-      return `<div class="check ${isSelected ? "open" : ""}"
+      const dotColor = r.risk === "red" ? "var(--flag)" : "#ffc83c";
+      return `<div
           data-pricing-row="${r.id}"
-          style="cursor:pointer;${isSelected ? "outline:2px solid rgba(130,199,255,.5);background:rgba(130,199,255,.08);" : ""}">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
-            ${chip(r.id, "blue")} <strong style="font-size:13px">${r.description}</strong>
-          </div>
-          <span class="mono" style="font-size:12px;color:var(--muted)">${r.amount}</span>
-        </div>
-        ${riskChip}
+          style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;${isSelected ? "background:rgba(130,199,255,.1);outline:1px solid rgba(130,199,255,.4);" : ""}">
+        <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0"></span>
+        ${chip(r.id, "blue")}
+        <span style="flex:1;font-size:13px">${r.description}</span>
+        <span class="mono" style="font-size:12px;color:var(--muted)">${r.amount}</span>
       </div>`;
     })
     .join("");
 
-  const selEvidenceChain = sel.evidence.length
-    ? sel.evidence.map((e) => evidenceLabels[e] ?? e).join(" → ") +
-      ` → ${sel.id}`
-    : `Keine Belegkette → ${sel.id}`;
-
   const selEvidenceChips = sel.evidence.length
-    ? sel.evidence.map((e) => chip(evidenceLabels[e] ?? e, "blue")).join(" ")
+    ? sel.evidence.map((e) => chip(e, "blue")).join(" ")
     : chip("Kein Nachweis", "flag");
 
-  const borderColor = sel.risk === "red" ? "var(--flag)" : "#ffc83c";
-  const critCount = rows.filter((r) => r.risk === "red").length;
-  const openCount = rows.filter((r) => r.risk === "yellow").length;
+  const riskChip =
+    sel.risk === "red"
+      ? chip("Kritisch", "flag")
+      : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`;
 
   return browser(
     html`<div class="panel">
-      <div class="kicker">Preisnachweis · der Höhe nach</div>
-      <h2>${SCENARIO.pricing.newPosition}</h2>
-      <p>Jede Kostenzeile muss durch Menge, Preisbasis und Belegkette nachvollziehbar sein.</p>
-      <div class="kpis" style="margin-bottom:16px">
-        <div class="mini-panel kpi">
-          <span class="mono">Nachtragssumme netto</span>
-          <strong>${SCENARIO.demoWorkflow.pricingTotal}</strong>
-        </div>
-        <div class="mini-panel kpi">
-          <span class="mono">Prüfstatus</span>
-          <strong style="color:var(--flag)">${critCount} kritisch · ${openCount} offen</strong>
-        </div>
-      </div>
+      <h2>Kostennachweis · ${SCENARIO.claimId}</h2>
       <div class="resolve-layout">
-        <div>
-          <p class="mono" style="font-size:11px;color:var(--muted);margin:0 0 10px">Kostenzeile auswählen</p>
-          <div class="checklist" style="gap:8px">
-            ${costLines}
-          </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          ${costLines}
         </div>
-        <div class="mini-panel" style="border-left:3px solid ${borderColor};padding-left:16px;align-self:flex-start">
-          <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em">Aktuell geprüft</p>
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px">
+        <div style="border-left:3px solid ${borderColor};padding-left:14px;align-self:flex-start">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px">
             <strong>${sel.id} · ${sel.description}</strong>
-            ${sel.risk === "red" ? chip("Kritisch", "flag") : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`}
-          </div>
-          <div class="spec-list" style="margin-bottom:12px">
-            <div class="spec-line">
-              <span class="mono">Kostenlogik</span>
-              <strong class="mono">${sel.quantity} × ${sel.unitRate} = ${sel.amount}</strong>
-            </div>
-            <div class="spec-line">
-              <span class="mono">Belegkette</span>
-              <span class="mono" style="color:#82c7ff;font-size:12px">${selEvidenceChain}</span>
-            </div>
+            ${riskChip}
           </div>
           <div style="margin-bottom:10px">${selEvidenceChips}</div>
-          <p style="font-size:13px;margin:0 0 12px">${sel.weakness}</p>
-          <div style="background:rgba(255,200,60,.07);border:1px solid rgba(255,200,60,.2);border-radius:6px;padding:10px 12px">
-            <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em">Empfohlene nächste Aktion</p>
-            <p style="margin:0;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>
-          </div>
+          <p style="font-size:13px;margin:0 0 12px;color:var(--muted)">${sel.weakness}</p>
+          <p style="margin:0;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>
         </div>
       </div>
       <br />${button("Weiter →")}
@@ -852,11 +756,7 @@ function commercialDashboard() {
 function deviationHero() {
   return browser(
     html`<div class="panel">
-      <div class="kicker">Abweichung klar machen</div>
       <h2>Bausoll ↔ Bau-Ist</h2>
-      <div class="spine">
-        ${SCENARIO.spine.map((s) => `<span>${s}</span>`).join("")}
-      </div>
       <div class="compare">
         <div class="mini-panel">
           <h3>Bausoll</h3>
@@ -896,12 +796,7 @@ function deviationHero() {
           </div>
         </div>
         <aside class="mini-panel">
-          <h3>Nachweise · ${SCENARIO.eventId}</h3>
-          <div class="metadata-grid">
-            ${chip("Foto Felskante", "ok")} ${chip("GPS", "ok")}
-            ${chip("Anordnung", "ok")} ${chip("Tiefenmaß?", "flag")}
-          </div>
-          <h3>Risk Check</h3>
+          <h3>Risk Check · ${SCENARIO.eventId}</h3>
           <div class="checklist">
             ${SCENARIO.riskFlags
               .map(
@@ -924,7 +819,6 @@ function missingProofPricing() {
   return browser(
     html`<div class="resolve-layout">
       <div class="panel">
-        <div class="kicker">Fehlende Nachweise zeigen</div>
         <h2>Nachweise vervollständigen</h2>
         <div class="checklist">
           ${SCENARIO.proofActions
@@ -949,7 +843,6 @@ function missingProofPricing() {
         </button>
       </div>
       <div class="panel">
-        <div class="kicker">Preis belastbar machen</div>
         <h2>Urkalkulation-Fortschreibung</h2>
         <div class="pricing-grid">
           <div class="mini-panel">
@@ -1044,7 +937,7 @@ function legalReview() {
               .join("")}
           </div>
           <div class="note-box">
-            <strong>Letzter 5%-Schritt:</strong> ${SCENARIO.finalGap}
+            <strong>Offen:</strong> ${SCENARIO.finalGap}
           </div>
           <button
             class="btn ${resolved ? "ok" : ""}"
