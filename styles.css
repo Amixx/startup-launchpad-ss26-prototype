@@ -538,6 +538,39 @@ p {
   background: #2d7df8;
 }
 
+.hotspot-hint {
+  position: relative;
+  z-index: 8;
+  outline: 3px solid rgba(102, 211, 140, 0.86);
+  outline-offset: 4px;
+  box-shadow:
+    inset 0 0 0 999px rgba(102, 211, 140, 0.3),
+    0 0 0 8px rgba(102, 211, 140, 0.18);
+  animation: hotspot-pulse 1600ms ease both;
+}
+
+@keyframes hotspot-pulse {
+  0% {
+    outline-color: rgba(102, 211, 140, 0);
+    box-shadow:
+      inset 0 0 0 999px rgba(102, 211, 140, 0),
+      0 0 0 0 rgba(102, 211, 140, 0);
+  }
+  16%,
+  58% {
+    outline-color: rgba(102, 211, 140, 0.9);
+    box-shadow:
+      inset 0 0 0 999px rgba(102, 211, 140, 0.3),
+      0 0 0 8px rgba(102, 211, 140, 0.18);
+  }
+  100% {
+    outline-color: rgba(102, 211, 140, 0);
+    box-shadow:
+      inset 0 0 0 999px rgba(102, 211, 140, 0),
+      0 0 0 14px rgba(102, 211, 140, 0);
+  }
+}
+
 .btn.secondary {
   border-color: rgba(14, 26, 36, 0.24);
   background: transparent;
@@ -1236,15 +1269,10 @@ tr.highlight {
   font-size: 36px;
   display: grid;
   place-items: center;
-  cursor: pointer;
+  cursor: default;
   box-shadow: 0 10px 24px rgba(215, 73, 58, 0.4);
   position: relative;
   z-index: 2;
-  transition: transform 0.2s ease;
-}
-
-.mic-btn:active {
-  transform: scale(0.95);
 }
 
 .mic-pulse-ring {
