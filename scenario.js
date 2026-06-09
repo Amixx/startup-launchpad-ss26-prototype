@@ -126,6 +126,16 @@ const SCENARIO = {
       sentAt: "17.04. · 08:42",
       event: "E-118 · Unerwarteter Stahlbetonfundamentrest im Bereich Achse B-C",
     },
+    pricingRows: [
+      { id: "P01", category: "Lohn", description: "Freilegen / Sichern, Kolonne", quantity: "6.0 h", unitRate: "68.00 €/h", amount: "408.00 €", priceBasis: "Regiebericht A09", evidence: ["A09"], risk: "yellow", weakness: "Regiebericht nicht gegengezeichnet", missingProof: "BÜ-Gegenzeichnung Regiebericht anfordern" },
+      { id: "P02", category: "Gerät", description: "22t Bagger mit Hydraulikhammer", quantity: "5.5 h", unitRate: "215.00 €/h", amount: "1.182,50 €", priceBasis: "Regiebericht A09 / Urkalkulation A04", evidence: ["A09", "A04"], risk: "yellow", weakness: "Geräteeinsatz plausibel, aber Stunden nicht bestätigt", missingProof: "Stundenfreigabe oder BÜ-Bestätigung ergänzen" },
+      { id: "P03", category: "Gerät", description: "Radlader / Ladegerät", quantity: "2.0 h", unitRate: "115.00 €/h", amount: "230.00 €", priceBasis: "Regiebericht A09", evidence: ["A09"], risk: "yellow", weakness: "Gerätestunden nicht gegengezeichnet", missingProof: "Regiebericht gegenzeichnen lassen" },
+      { id: "P04", category: "Transport", description: "Laden und Abtransport Betonbruch", quantity: "8.1 t", unitRate: "58.00 €/t", amount: "469.80 €", priceBasis: "Aufmaß A10 / Wiegeschein A11", evidence: ["A10", "A11"], risk: "yellow", weakness: "Mengenbezug plausibel, aber Aufmaß nicht AG-bestätigt", missingProof: "Aufmaß bestätigen lassen" },
+      { id: "P05", category: "Entsorgung", description: "Entsorgung Betonbruch", quantity: "8.1 t", unitRate: "165.00 €/t", amount: "1.336,50 €", priceBasis: "Wiegeschein / Entsorgungsnachweis A11", evidence: ["A11"], risk: "yellow", weakness: "Entsorgungsbeleg nicht eindeutig Claim N01 zugeordnet", missingProof: "N01-Referenz auf Entsorgungsbeleg ergänzen" },
+      { id: "P06", category: "Nebenarbeiten", description: "Nebenarbeiten pauschal", quantity: "1.0", unitRate: "450.00 €", amount: "450.00 €", priceBasis: "Pauschalansatz", evidence: [], risk: "red", weakness: "Pauschalposition ohne belastbaren Nachweis", missingProof: "Tätigkeiten aufschlüsseln oder Nachweis ergänzen" },
+      { id: "P08", category: "Zuschläge", description: "BGK / AGK / Wagnis & Gewinn", quantity: "22%", unitRate: "auf EKT", amount: "896.90 €", priceBasis: "Urkalkulation / EFB A04", evidence: ["A04", "A12"], risk: "yellow", weakness: "Zuschlagslogik nur teilweise aus EFB nachvollziehbar", missingProof: "EFB-Bezug und Zuschlagsbasis erläutern" },
+    ],
+    pricingTotal: "4.973,70 € netto",
   },
 };
 
