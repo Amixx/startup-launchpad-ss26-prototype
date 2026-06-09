@@ -432,26 +432,13 @@ const I18N = {
       Prüffähige: "auditable",
       enthalten: "included",
       Nachtragssumme: "change-order amount",
-      "Ein lückenloser Nachweis.": "One continuous evidence trail.",
-      "Drei Rollen, drei Geräte, ein verbundener Nachtrag — von der Felskante bis zur belastbaren Nachtragsakte.":
-        "Three roles, three devices, one connected change order — from rock edge to defensible claim file.",
       "Neu starten": "Start over",
-      Kaufmännisch: "Commercial",
-      Freigegeben: "Approved",
-      "Felskante mit Foto, GPS, Tiefe und Anordnung erfasst.":
-        "Rock edge captured with photo, GPS, depth and instruction.",
-      "Bausoll/Bau-Ist, fehlende Nachweise und":
-        "Scope/actual comparison, missing evidence and",
-      "geklärt.": "resolved.",
-      "Prüffähige Akte mit Begründung, Nachweisen und Kalkulation exportbereit.":
-        "Auditable file with justification, evidence and calculation ready for export.",
       "AUTO: GPS · ZEIT · TIEFE": "AUTO: GPS · TIME · DEPTH",
       "app.nachweis.bau/nachtraege": "app.nachweis.bau/change-orders",
       "app.nachweis.bau/freigabe": "app.nachweis.bau/approval",
       SHOT: "SHOT",
       FOTO: "PHOTO",
       "Pfeiltasten ← → oder klicken": "Arrow keys ← → or click",
-      Abschluss: "Summary",
       Starten: "Start",
     },
   },
