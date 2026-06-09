@@ -284,7 +284,7 @@ button:focus-visible,
 }
 
 .screen {
-  width: min(1160px, 100%);
+  width: min(1800px, 100%);
   display: none;
 }
 
@@ -307,8 +307,8 @@ button:focus-visible,
 .frame-phone {
   display: flex;
   flex-direction: column;
-  width: 374px;
-  height: min(720px, calc(100vh - 214px));
+  width: 450px;
+  height: min(864px, calc(100vh - 214px));
   margin: 0 auto;
   padding: 14px;
   border: 1px solid rgba(243, 245, 247, 0.22);
@@ -353,9 +353,9 @@ button:focus-visible,
 .frame-laptop {
   display: flex;
   flex-direction: column;
-  width: min(1100px, 100%);
+  width: min(1760px, 100%);
   max-height: calc(100vh - 214px);
-  min-height: min(520px, calc(100vh - 214px));
+  min-height: min(832px, calc(100vh - 214px));
   margin: 0 auto;
   border: 1px solid rgba(243, 245, 247, 0.24);
   background: #101d2b;
@@ -364,9 +364,9 @@ button:focus-visible,
 
 .frame-laptop {
   position: relative;
-  width: min(1000px, 100%);
+  width: min(1600px, 100%);
   max-height: calc(100vh - 240px);
-  min-height: min(486px, calc(100vh - 240px));
+  min-height: min(780px, calc(100vh - 240px));
   margin: 0 auto 24px;
   padding: 16px 6px 0;
   border: 2px solid #aeb8c0;
@@ -536,7 +536,7 @@ p {
 }
 
 .title-card {
-  width: min(1060px, 100%);
+  width: min(1700px, 100%);
   margin: 0 auto;
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
@@ -1236,7 +1236,7 @@ tr.highlight {
 
   .frame-phone {
     height: auto;
-    min-height: 650px;
+    min-height: 780px;
   }
 }
 
