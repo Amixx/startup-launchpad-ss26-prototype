@@ -10,7 +10,6 @@ const state = {
 };
 
 const screens = [
-  { id: "s0", silo: "intro", number: "00", render: titleScreen },
   { id: "s1", silo: "site", number: "01", render: siteHome },
   { id: "s2", silo: "site", number: "02", render: voiceCapture },
   { id: "s3", silo: "site", number: "02b", render: aiProcessing },
@@ -69,10 +68,6 @@ function html(strings, ...values) {
 
 function chip(text, type = "") {
   return `<span class="chip ${type}">${text}</span>`;
-}
-
-function button(text, attrs = "data-next") {
-  return `<button class="btn" type="button" ${attrs}>${text}</button>`;
 }
 
 function translateText(text) {
@@ -251,7 +246,6 @@ function baseSilo(silo) {
 }
 
 function screenLabel(silo) {
-  if (silo === "intro") return "";
   if (silo === "recap") return "Abschluss";
   return SCENARIO.roles.find((r) => r.id === silo)?.label ?? silo;
 }
@@ -263,9 +257,7 @@ function updateRail(screen) {
       ? "legal"
       : screen.silo === "recap"
         ? "legal"
-        : screen.silo === "intro"
-          ? "site"
-          : "site";
+        : "site";
   const order = ["site", "commercial", "legal"];
   const index = order.indexOf(active);
   rail.querySelectorAll("[data-rail]").forEach((node) => {
@@ -339,64 +331,26 @@ function exportPdf() {
   setTimeout(() => toast.classList.remove("is-visible"), 2200);
 }
 
-// <!-- ============ SILO 1: BAUSTELLE (screens 1–4) ============ -->
-function titleScreen() {
-  return html`<div class="title-card">
-    <div>
-      <div class="kicker">Technischer Nachtrag</div>
-      <h1>${SCENARIO.product.name}</h1>
-      <div class="subtitle">${SCENARIO.product.tagline}</div>
-      <p>${SCENARIO.product.context} ${SCENARIO.oneLine}</p>
-      <div class="spine">
-        ${SCENARIO.spine.map((s) => `<span>${s}</span>`).join("")}
-      </div>
-      ${button("Starten", "data-next")}
-    </div>
-    <div class="blueprint-card">
-      <div class="kicker">Aktueller Nachtrag</div>
-      <h2>${SCENARIO.title}</h2>
-      <p>${SCENARIO.project}<br />${SCENARIO.workPackage}</p>
-      <div class="metadata-grid">
-        ${chip(SCENARIO.claimId, "blue")} ${chip(SCENARIO.bausoll.lv, "blue")}
-        ${chip(SCENARIO.bauist.extraQuantity, "flag")}
-        ${chip(SCENARIO.pricing.total, "ok")}
-      </div>
-      <p class="mono" style="margin:16px 0 0">
-        Pfeiltasten ← → oder klicken
-      </p>
-    </div>
-  </div>`;
-}
-
+// <!-- ============ SILO 1: BAUSTELLE ============ -->
 function phone(content) {
   return `<div class="frame-phone"><div class="phone-glass"><div class="phone-status"><span>09:14</span><span>5G ▰▰▰ 84%</span></div><div class="phone-content">${content}</div></div></div>`;
 }
 
 function siteHome() {
   return phone(
-    html`<div class="phone-head">
-        <div>
-          <div class="kicker">${SCENARIO.project}</div>
-          <h2 class="phone-title">Ereignisse Baustelle</h2>
+    html`<div class="site-home">
+        <div class="phone-head">
+          <div>
+            <div class="kicker">${SCENARIO.project}</div>
+            <h2 class="phone-title">Ereignisse Baustelle</h2>
+          </div>
+          ${chip("Polier", "blue")}
         </div>
-        ${chip("Polier", "blue")}
-      </div>
-      <button
-        class="btn"
-        style="width:100%;height:78px;font-size:18px;display:flex;align-items:center;justify-content:center;gap:10px"
-        type="button"
-        data-next
-      >
-        <span>🎙️</span> Abweichung melden
-      </button>
-      <h3 style="margin-top:22px">Heute</h3>
-      <div class="event-list">
-        ${SCENARIO.siteEvents
-          .map(
-            (e) =>
-              `<div class="event-row"><div class="event-icon">${e[0]}</div><div><strong>${e[1]}</strong><br><span class="mono" style="color:var(--muted)">${SCENARIO.workPackage}</span></div>${chip(e[2], e[2] === "Neu" ? "flag" : "")}</div>`,
-          )
-          .join("")}
+        <div class="site-home__action">
+          <button class="btn site-home__button" type="button" data-next>
+            <span>🎙️</span> Abweichung melden
+          </button>
+        </div>
       </div>`,
   );
 }

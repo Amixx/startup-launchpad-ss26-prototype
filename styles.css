@@ -567,6 +567,28 @@ p {
   line-height: 1.1;
 }
 
+.site-home {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.site-home__action {
+  flex: 1 1 auto;
+  display: grid;
+  align-items: center;
+}
+
+.site-home__button {
+  width: 100%;
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 18px;
+}
+
 .event-list {
   display: grid;
   gap: 9px;
@@ -1576,5 +1598,4 @@ tr.highlight {
     box-shadow: 0 4px 16px rgba(31, 111, 235, 0.5);
   }
 }
-
 
