@@ -3,8 +3,6 @@
 const SCENARIO = {
   product: {
     name: "Nachweis",
-    tagline: "Vom Bausoll-Abgleich zur prüffähigen Nachtragsakte.",
-    context: "Ein Nachtrag. Drei Rollen. Drei Geräte.",
   },
   roles: [
     {
@@ -31,8 +29,6 @@ const SCENARIO = {
   eventId: "E‑118",
   claimId: "N‑204",
   title: "Felsaushub Baufeld B",
-  oneLine:
-    "Beim Aushub der Baugrube wird auf −2,40 m Fels / stark verfestigter Boden angetroffen — nicht im LV vorgesehen.",
   bausoll: {
     lv: "LV 02.03.0010",
     description: "Bodenaushub Bodenklasse 3–5",
@@ -53,17 +49,6 @@ const SCENARIO = {
     "Wetter trocken",
     "Baugrube B",
     "Tiefe −2,40 m",
-  ],
-  siteEvents: [
-    ["07:42", "LKW-Zufahrt Nord blockiert", "Info"],
-    ["08:55", "Aufmaß Schalung Abschnitt B2", "OK"],
-    ["09:14", "Rissbildung Bodenplatte A1", "Neu"],
-  ],
-  guidedChecks: [
-    ["Foto mit Maßstab", true],
-    ["Tiefe dokumentiert", true],
-    ["Anordnung verknüpfen", false],
-    ["kurze Notiz ergänzen", false],
   ],
   note: "Felskante läuft quer durch Baugrube B. Aushub mit Standardgerät nicht fortsetzbar; Bauleiter ordnet Fortführung mit Meißel an.",
   riskFlags: [
@@ -128,14 +113,6 @@ const SCENARIO = {
     { id: "action-instruction", task: "Anordnung BL-44 verknüpfen", icon: "📎", auto: false },
     { id: "action-gps", task: "GPS-Position erfasst", icon: "📍", auto: true, source: "GPS" },
     { id: "action-weather", task: "Wetter & Bedingungen", icon: "🌤️", auto: true, source: "Sensor" },
-  ],
-  spine: [
-    "Bausoll",
-    "Bau-Ist",
-    "Abweichung",
-    "Nachweise",
-    "Menge/Kosten",
-    "prüffähige Nachtragsakte",
   ],
   demoWorkflow: {
     evidenceCards: [
@@ -258,18 +235,12 @@ const I18N = {
         "Auto",
       "Sensor":
         "Sensor",
-      "Vom Bausoll-Abgleich zur prüffähigen Nachtragsakte.":
-        "From contract-scope comparison to an auditable change-order file.",
-      "Ein Nachtrag. Drei Rollen. Drei Geräte.":
-        "One change order. Three roles. Three devices.",
       "Technischer Nachtrag": "Technical change order",
       "Aktueller Nachtrag": "Active change order",
       "Neubau Verwaltungsgebäude · Baufeld B":
         "New administrative building · Site B",
       "Aushub Baugrube · Tiefbau": "Foundation pit excavation · civil works",
       "Felsaushub Baufeld B": "Rock excavation · Site B",
-      "Beim Aushub der Baugrube wird auf −2,40 m Fels / stark verfestigter Boden angetroffen — nicht im LV vorgesehen.":
-        "During foundation excavation, rock / strongly compacted soil is encountered at −2.40 m — not included in the bill of quantities.",
       "Bodenaushub Bodenklasse 3–5": "Soil excavation class 3–5",
       "geschuldete Leistung laut LV": "contracted scope per bill of quantities",
       "Fels / stark verfestigter Boden BK 6–7":
@@ -279,13 +250,7 @@ const I18N = {
       "Wetter trocken": "weather dry",
       "Baugrube B": "foundation pit B",
       "Tiefe −2,40 m": "depth −2.40 m",
-      "LKW-Zufahrt Nord blockiert": "truck access north blocked",
-      "Aufmaß Schalung Abschnitt B2": "measurement formwork section B2",
       "Rissbildung Bodenplatte A1": "crack formation base slab A1",
-      "Foto mit Maßstab": "photo with scale",
-      "Tiefe dokumentiert": "depth documented",
-      "Anordnung verknüpfen": "link instruction",
-      "kurze Notiz ergänzen": "add short note",
       "Felskante läuft quer durch Baugrube B. Aushub mit Standardgerät nicht fortsetzbar; Bauleiter ordnet Fortführung mit Meißel an.":
         "The rock edge runs across foundation pit B. Excavation cannot continue with standard equipment; the site manager orders continuation with a breaker.",
       "Nachweis Tiefenmaß fehlt": "depth measurement proof missing",
@@ -319,8 +284,6 @@ const I18N = {
       Bausoll: "contracted scope",
       "Bau-Ist": "actual site condition",
       Abweichung: "deviation",
-      "Menge/Kosten": "quantity/cost impact",
-      "prüffähige Nachtragsakte": "auditable change-order file",
       Nachtragsakte: "change-order file",
       Nachtrag: "change order",
       Baustelle: "Site",
@@ -488,8 +451,6 @@ const I18N = {
       "app.nachweis.bau/freigabe": "app.nachweis.bau/approval",
       SHOT: "SHOT",
       FOTO: "PHOTO",
-      "Pfeiltasten ← → oder klicken": "Arrow keys ← → or click",
-      Starten: "Start",
     },
   },
   de: {
