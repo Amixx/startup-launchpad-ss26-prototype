@@ -72,7 +72,7 @@ button:focus-visible,
 /* ============ LAYOUT / CHROME ============ */
 .topbar {
   display: grid;
-  grid-template-columns: 130px minmax(260px, 540px) auto;
+  grid-template-columns: minmax(130px, 1fr) minmax(260px, 540px) minmax(130px, 1fr);
   gap: 14px;
   align-items: center;
   z-index: 5;
@@ -105,6 +105,8 @@ button:focus-visible,
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
+  justify-self: center;
+  width: 100%;
   padding: 0;
   border: 0;
   background: transparent;
@@ -122,6 +124,7 @@ button:focus-visible,
   border: 1px solid transparent;
   background: transparent;
   color: rgba(14, 26, 36, 0.42);
+  text-align: center;
   transition: 180ms ease;
 }
 
