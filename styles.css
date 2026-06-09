@@ -286,20 +286,22 @@ button:focus-visible,
 .frame-laptop {
   display: flex;
   flex-direction: column;
-  width: min(1760px, 100%);
-  max-height: calc(100vh - 150px);
-  min-height: min(832px, calc(100vh - 150px));
+  width: min(1240px, calc(100vw - clamp(72px, 12vw, 190px)));
+  max-height: min(760px, calc(100vh - 180px));
+  min-height: min(720px, calc(100vh - 180px));
   margin: 0 auto;
   border: 1px solid rgba(14, 26, 36, 0.12);
+  border-radius: 10px;
   background: #fff;
   box-shadow: var(--shadow);
+  overflow: hidden;
 }
 
 .frame-laptop {
   position: relative;
-  width: min(1600px, 100%);
-  max-height: calc(100vh - 166px);
-  min-height: min(780px, calc(100vh - 166px));
+  width: min(1120px, calc(100vw - clamp(96px, 16vw, 240px)));
+  max-height: min(720px, calc(100vh - 196px));
+  min-height: min(680px, calc(100vh - 196px));
   margin: 0 auto;
   padding: 8px 6px 0;
   border: 1px solid rgba(14, 26, 36, 0.14);
@@ -1598,4 +1600,3 @@ tr.highlight {
     box-shadow: 0 4px 16px rgba(31, 111, 235, 0.5);
   }
 }
-
