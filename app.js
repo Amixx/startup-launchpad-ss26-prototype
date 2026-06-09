@@ -6,6 +6,7 @@ const state = {
   lastSilo: null,
   voiceMemoRecorded: false,
   photoCaptured: false,
+  selectedPricingRowId: "P06",
 };
 
 const screens = [
@@ -15,6 +16,7 @@ const screens = [
   { id: "s3", silo: "site", number: "03", render: siteGuided },
   { id: "s4", silo: "site", number: "04", render: siteConfirm },
   { id: "s4b", silo: "site", number: "04b", render: evidenceGraph },
+  { id: "s4c", silo: "commercial", number: "04c", render: pricingEvidenceMap },
   {
     id: "s5",
     silo: "commercial",
@@ -187,6 +189,13 @@ function render() {
       render();
     }),
   );
+  stage.querySelectorAll("[data-pricing-row]").forEach((el) =>
+    el.addEventListener("click", (event) => {
+      event.stopPropagation();
+      state.selectedPricingRowId = el.dataset.pricingRow;
+      render();
+    }),
+  );
   applyLanguage();
 }
 
@@ -267,6 +276,7 @@ function restart() {
   state.lastSilo = null;
   state.voiceMemoRecorded = false;
   state.photoCaptured = false;
+  state.selectedPricingRowId = "P06";
   toast.classList.remove("is-visible");
   render();
 }
@@ -508,6 +518,106 @@ function evidenceGraph() {
       <p class="mono" style="margin-top:18px;color:var(--muted);font-size:11px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
         AI-Klassifizierung simuliert · keine echte Verarbeitung
       </p>
+      <br />${button("Weiter →")}
+    </div>`,
+  );
+}
+
+function pricingEvidenceMap() {
+  const rows = SCENARIO.demoWorkflow.pricingRows;
+  const redCount = rows.filter((r) => r.risk === "red").length;
+  const yellowCount = rows.filter((r) => r.risk === "yellow").length;
+  const missingCount = rows.filter((r) => r.evidence.length === 0).length;
+  const sel = rows.find((r) => r.id === state.selectedPricingRowId) || rows.find((r) => r.id === "P06") || rows[0];
+
+  const evidenceLabels = { A04: "A04 Urkalkulation", A09: "A09 Regiebericht", A10: "A10 Aufmaß", A11: "A11 Wiegeschein", A12: "A12 Kalkulation" };
+
+  const tableRows = rows.map((r) => {
+    const isSelected = r.id === sel.id;
+    const [qVal, qUnit = "–"] = r.quantity.split(" ");
+    const shortDesc = r.description.length > 28 ? r.description.slice(0, 26) + "…" : r.description;
+    const riskChip = r.risk === "red"
+      ? chip("Angreifbar", "flag")
+      : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c;white-space:nowrap">Teilweise belegt</span>`;
+    const evidenceChips = r.evidence.length
+      ? r.evidence.map((e) => chip(evidenceLabels[e] ?? e, "blue")).join(" ")
+      : chip("Kein Nachweis", "flag");
+    const rowStyle = isSelected
+      ? 'style="background:rgba(130,199,255,.13);outline:2px solid rgba(130,199,255,.55)"'
+      : r.risk === "red" ? 'style="background:rgba(255,80,80,.06)"' : "";
+    const btnLabel = isSelected ? "Geöffnet" : "Details ansehen";
+    const btnStyle = isSelected
+      ? 'style="padding:4px 10px;font-size:11px;white-space:nowrap;background:rgba(130,199,255,.2);color:#82c7ff;border-color:rgba(130,199,255,.4)"'
+      : 'style="padding:4px 10px;font-size:11px;white-space:nowrap"';
+    return `<tr ${rowStyle}>
+      <td class="mono">${r.id}</td>
+      <td>${r.category}</td>
+      <td title="${r.description}">${shortDesc}</td>
+      <td class="mono">${qVal}</td>
+      <td class="mono">${qUnit}</td>
+      <td class="mono">${r.unitRate}</td>
+      <td class="mono"><strong>${r.amount}</strong></td>
+      <td>${evidenceChips}</td>
+      <td>${riskChip}</td>
+      <td><button class="btn" type="button" data-pricing-row="${r.id}" ${btnStyle}>${btnLabel}</button></td>
+    </tr>`;
+  }).join("");
+
+  const selRiskChip = sel.risk === "red" ? chip("Angreifbar", "flag") : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Teilweise belegt</span>`;
+  const selEvidenceChips = sel.evidence.length
+    ? sel.evidence.map((e) => chip(evidenceLabels[e] ?? e, "blue")).join(" ")
+    : chip("Kein Nachweis", "flag");
+  const borderColor = sel.risk === "red" ? "var(--flag)" : "#ffc83c";
+
+  return browser(
+    html`<div class="panel">
+      <div class="kicker">Pricing Evidence Map</div>
+      <h2>der Höhe nach</h2>
+      <p>Jede Kostenzeile muss der Höhe nach belegbar sein.</p>
+      <div class="kpis" style="margin-bottom:18px">
+        <div class="mini-panel kpi">
+          <span class="mono">Nachtragssumme netto</span>
+          <strong>${SCENARIO.demoWorkflow.pricingTotal}</strong>
+        </div>
+        <div class="mini-panel kpi">
+          <span class="mono">Angreifbare Zeilen</span>
+          <strong style="color:var(--flag)">${redCount} rot · ${yellowCount} gelb</strong>
+        </div>
+        <div class="mini-panel kpi">
+          <span class="mono">Zeilen ohne Nachweis</span>
+          <strong style="color:var(--flag)">${missingCount}</strong>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>ID</th><th>Kategorie</th><th>Beschreibung</th>
+              <th>Menge</th><th>Einheit</th><th>EP / Satz</th><th>Betrag</th>
+              <th>Nachweise</th><th>Risiko</th><th></th>
+            </tr></thead>
+            <tbody>${tableRows}</tbody>
+          </table>
+        </div>
+        <div class="mini-panel" style="border-left:3px solid ${borderColor};padding-left:14px;position:sticky;top:0">
+          <p class="mono" style="color:var(--muted);font-size:10px;margin:0 0 6px;text-transform:uppercase;letter-spacing:.05em">Aktuell geprüft</p>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px">
+            <strong style="font-size:13px">${sel.id} · ${sel.description}</strong>
+            ${selRiskChip}
+          </div>
+          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Kostenlogik</p>
+          <p style="margin:0 0 10px" class="mono">${sel.quantity} × ${sel.unitRate} = <strong>${sel.amount}</strong></p>
+          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Preisbasis</p>
+          <p style="margin:0 0 8px;font-size:13px">${sel.priceBasis}</p>
+          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 4px">Verknüpfte Nachweise</p>
+          <div style="margin-bottom:10px">${selEvidenceChips}</div>
+          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Warum angreifbar?</p>
+          <p style="margin:0 0 10px;font-size:13px">${sel.weakness}</p>
+          <p class="mono" style="color:var(--muted);font-size:11px;margin:0 0 2px">Was fehlt?</p>
+          <p style="margin:0 0 10px;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>
+          <p class="mono" style="color:var(--muted);font-size:11px;margin:0">Diese Kostenzeile muss der Höhe nach durch Menge, Preisbasis und Belegkette nachvollziehbar sein.</p>
+        </div>
+      </div>
       <br />${button("Weiter →")}
     </div>`,
   );
