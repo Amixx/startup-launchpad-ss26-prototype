@@ -296,22 +296,17 @@ function render() {
 }
 
 function baseSilo(silo) {
-  if (silo.includes("commercial")) return "commercial";
-  if (silo.includes("legal")) return "legal";
-  return "site";
+  if (silo.includes("legal")) return "followup";
+  return "technical";
 }
 
 function screenLabel(silo) {
-  return SCENARIO.roles.find((r) => r.id === silo)?.label ?? silo;
+  return SCENARIO.roles.find((r) => r.id === baseSilo(silo))?.label ?? silo;
 }
 
 function updateRail(screen) {
-  const active = screen.silo.includes("commercial")
-    ? "commercial"
-    : screen.silo.includes("legal")
-      ? "legal"
-      : "site";
-  const order = ["site", "commercial", "legal"];
+  const active = baseSilo(screen.silo);
+  const order = SCENARIO.roles.map((role) => role.id);
   const index = order.indexOf(active);
   rail.querySelectorAll("[data-rail]").forEach((node) => {
     const nodeIndex = order.indexOf(node.dataset.rail);
@@ -322,11 +317,10 @@ function updateRail(screen) {
     );
   });
   const packet = document.querySelector("#packet");
-  packet.textContent = index === 0 ? SCENARIO.eventId : SCENARIO.claimId;
-  packet.style.setProperty(
-    "--packet-x",
-    ["16%", "50%", "84%"][Math.max(0, index)],
-  );
+  const position =
+    order.length <= 1 ? 50 : 16 + (68 * Math.max(0, index)) / (order.length - 1);
+  packet.textContent = active === "technical" ? SCENARIO.eventId : SCENARIO.claimId;
+  packet.style.setProperty("--packet-x", `${position}%`);
 }
 
 function next() {
@@ -388,12 +382,13 @@ function resolveHeight() {
   render();
 }
 
-// Claim completeness climbs as the two commercial maps are completed:
-// 68 % captured on site → +14 entitlement evidence → +13 pricing evidence → 95 %.
-// Legal closes the final 5 % (the BL‑44 reference) downstream.
+
+// Claim readiness climbs as the two commercial maps are completed:
+// 62 % early notice + documents -> +18 interpretation map -> +15 pricing map -> 95 %.
+// The final 5 % is the follow-up / reserve-argumentation setup downstream.
 function claimCompleteness() {
   return (
-    68 + (state.groundResolved ? 14 : 0) + (state.heightResolved ? 13 : 0)
+    62 + (state.groundResolved ? 18 : 0) + (state.heightResolved ? 15 : 0)
   );
 }
 
@@ -408,72 +403,108 @@ function exportPdf() {
   setTimeout(() => toast.classList.remove("is-visible"), 2200);
 }
 
-// <!-- ============ SILO 1: BAUSTELLE ============ -->
+// <!-- ============ SILO 1: ERKENNEN / FRUEHMELDUNG ============ -->
 function phone(content) {
   return `<div class="frame-phone"><div class="phone-glass"><div class="phone-status"><span>09:14</span><span>5G ▰▰▰ 84%</span></div><div class="phone-content">${content}</div></div></div>`;
 }
 
 function siteHome() {
-  return phone(
-    html`<div class="site-home">
-        <div class="phone-head">
-          <div>
-            <div class="kicker">${SCENARIO.project}</div>
-            <h2 class="phone-title">Ereignisse Baustelle</h2>
+  return browser(
+    html`<div class="intake-grid">
+      <section class="panel">
+        <div class="kicker">${SCENARIO.project}</div>
+        <h2>Technische Klärung vor Bestellung</h2>
+        <p>${SCENARIO.note}</p>
+        <div class="doc-lane">
+          <div class="doc-tile is-contract">
+            <span>LV</span>
+            <strong>${SCENARIO.bausoll.lv}</strong>
+            <small>${SCENARIO.bausoll.description}</small>
           </div>
-          ${chip("Polier", "blue")}
+          <div class="doc-tile is-plan">
+            <span>Plan</span>
+            <strong>F-12</strong>
+            <small>Anschluss nach Ausschreibungsanlage</small>
+          </div>
+          <div class="doc-tile is-risk">
+            <span>Detail</span>
+            <strong>F-17</strong>
+            <small>${SCENARIO.bauist.description}</small>
+          </div>
         </div>
-        <div class="site-home__action">
-          <button class="btn site-home__button" type="button" data-next>
-            <span>🎙️</span> Abweichung melden
-          </button>
+        <div class="early-warning">
+          <strong>Produktannahme korrigiert:</strong>
+          Der erste wertvolle Moment ist nicht die Fotodokumentation vor Ort,
+          sondern das rechtzeitige Erkennen eines LV-/Plan-Widerspruchs, bevor
+          Material bestellt wird.
         </div>
-      </div>`,
+        ${button("Widerspruch öffnen")}
+      </section>
+      <aside class="panel">
+        <div class="kicker">Projektakte</div>
+        <h3>${SCENARIO.workPackage}</h3>
+        <div class="folder-list">
+          <div><b>01 LV</b><span>${SCENARIO.bausoll.lv}</span></div>
+          <div><b>03 Planung</b><span>Plan F-12 · Detail F-17</span></div>
+          <div><b>07 Schriftverkehr</b><span>E-Mail Architekt 07.06.</span></div>
+          <div><b>09 Nachträge</b><span>angelegt nach Frühhinweis</span></div>
+        </div>
+      </aside>
+    </div>`,
   );
 }
 
 function voiceCapture() {
-  return phone(
-    html`<div class="phone-head">
-        <div>
-          <div class="kicker">Sprachaufzeichnung</div>
-          <h2 class="phone-title">Beschreibe die Abweichung</h2>
+  return browser(
+    html`<div class="mail-layout">
+      <section class="panel">
+        <div class="kicker">Frühmeldung</div>
+        <h2>Kostenhinweis als Einzeiler</h2>
+        <p>
+          Der Auftraggeber soll sofort wissen, dass aus der technischen Klärung
+          Mehrkosten entstehen. Die ausführliche Begründung bleibt zunächst in
+          Reserve.
+        </p>
+        <div class="email-box">
+          <div class="email-line"><span>An</span><strong>auftraggeber@projekt.de</strong></div>
+          <div class="email-line"><span>Betreff</span><strong>Kostenhinweis ${SCENARIO.claimId} · Fensterband Süd</strong></div>
+          <p>
+            Achtung, aus dem Abgleich LV 14.02.0030 mit Wärmeschutznachweis /
+            Detail F-17 ergibt sich eine geänderte Leistung für Profilbautiefe
+            und gedämmten Anschluss. Hierzu entstehen Mehrkosten; Nachtragsangebot
+            folgt nach Preisabfrage.
+          </p>
         </div>
-        ${chip("NEU", "flag")}
-      </div>
-      <div class="voice-record-container">
-        <div class="voice-status-label">Aufnahme läuft...</div>
-
-        <div class="mic-container">
-          <div class="mic-voice-ring ring-a"></div>
-          <div class="mic-voice-ring ring-b"></div>
-          <div class="mic-voice-ring ring-c"></div>
-          <div class="mic-btn" role="img" aria-label="Recording in progress">
-            ⏹️
-          </div>
+        <div class="metadata-grid">
+          ${chip("sofort versendbar", "ok")}
+          ${chip("ohne Vollargumentation", "flag")}
+          ${chip("vor Bestellung", "blue")}
         </div>
-
-        <div class="voice-transcript">
-          <p class="mono" id="live-transcript-text"></p>
-        </div>
-
-        <button class="btn" style="width:100%" type="button" data-next>
-          Sprachaufzeichnung beenden
-        </button>
-      </div>`
+        ${button("Kostenhinweis senden")}
+      </section>
+      <aside class="panel">
+        <div class="kicker">Interview-Feedback</div>
+        <h3>Timing schlägt Dokumentationsmenge</h3>
+        <p>
+          Bei Fenstern und Fassaden entstehen viele Nachträge in der technischen
+          Klärung. Der Prototyp priorisiert deshalb den Frühhinweis und die
+          kaufmännische Nachverfolgung.
+        </p>
+      </aside>
+    </div>`,
   );
 }
 
 function aiProcessing() {
-  return phone(
-    html`<div class="ai-processing-container">
+  return browser(
+    html`<div class="panel ai-processing-container">
       <div class="processing-spinner-box">
         <div class="spinner-ring"></div>
-        <span class="system-badge-pulsing">✨ Strukturierung...</span>
+        <span class="system-badge-pulsing">Strukturierung...</span>
       </div>
       <div class="processing-info" style="text-align: center; margin-top: 24px;">
-        <div class="kicker">Sprachaufnahme wird verarbeitet...</div>
-        <h3 class="phone-title" style="margin-top: 8px; font-size: 18px;">Analyse läuft...</h3>
+        <div class="kicker">Dokumente werden verknüpft</div>
+        <h3 style="margin-top: 8px; font-size: 20px;">LV, Plananlage und Wärmeschutz werden gespiegelt</h3>
       </div>
     </div>`
   );
@@ -513,9 +544,8 @@ function aiSummaryActions() {
 
   const manualItems = SCENARIO.smartActions
     .filter(a => !a.auto)
-    .map(action => {
-      const isPhoto = action.id === "action-photo";
-      return `<div class="action-item is-open"${isPhoto ? ' data-next style="cursor:pointer"' : ''}>
+    .map((action, index) => {
+      return `<div class="action-item is-open"${index === 0 ? ' data-next style="cursor:pointer"' : ''}>
         <div class="action-item-left">
           <span class="action-item-icon">${action.icon}</span>
           <strong>${action.task}</strong>
@@ -533,11 +563,11 @@ function aiSummaryActions() {
     <span class="action-status-icon">✓</span>
   </div>`;
 
-  return phone(
-    html`<div class="ai-container">
+  return browser(
+    html`<div class="ai-container document-ai">
       <div class="ai-summary-card">
         <div class="summary-title">
-          <h3>Mögliche Abweichung</h3>
+          <h3>Nachtragskandidat</h3>
           ${chip(SCENARIO.bausoll.lv, "blue")}
         </div>
         <div class="metadata-grid" style="margin:8px 0 4px">
@@ -549,67 +579,56 @@ function aiSummaryActions() {
       </div>
 
       <div class="smart-actions-section">
-        <div class="smart-actions-title">Erforderliche Nachweise</div>
+        <div class="smart-actions-title">Nächste Schritte</div>
         <div class="checklist">
           ${manualItems}
           ${autoItem}
         </div>
       </div>
 
-      <button class="btn" style="width:100%" type="button" data-next>
-        Foto aufnehmen
+      <button class="btn" type="button" data-next>
+        Kostenhinweis dokumentieren
       </button>
     </div>`
   );
 }
 
-function rockSvg() {
-  return `<img src="excavation-evidence.png" alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab" loading="eager" /><span class="camera__stamp">AUTO: GPS · ZEIT · TIEFE</span>`;
-}
-
 function siteCapture() {
-  return html`<div class="frame-phone camera-phone">
-    <div class="phone-glass">
-      <div class="cam-view">
-        <div class="cam-task-banner">
-          <span>📷</span> Aufgabe: Foto der Felskante mit Maßstab
-        </div>
-        <img
-          src="excavation-evidence.png"
-          alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab"
-          loading="eager"
-        />
-        <div class="cam-top">
-          <span>09:14</span>
-          <div class="cam-top-ctrls"><span>⚡ Auto</span><span>HDR</span></div>
-        </div>
-        <div class="cam-reticle"></div>
-        <div class="cam-flag">${SCENARIO.eventId}</div>
-        <div class="cam-geo">
-          <span class="cam-geo-dot"></span>
-          <div>
-            ${SCENARIO.metadata[0]}<br />${SCENARIO.metadata[1]} ·
-            ${SCENARIO.metadata[3]}<br />${SCENARIO.metadata[4]}
+  return browser(
+    html`<div class="handoff-grid">
+      <section class="panel">
+        <div class="kicker">Versandnachweis</div>
+        <h2>Kostenhinweis ist abgelegt</h2>
+        <div class="timeline">
+          <div class="timeline-item is-done">
+            <span>09:14</span>
+            <strong>LV-/Plan-Widerspruch erkannt</strong>
+            <p>${SCENARIO.bauist.description}</p>
+          </div>
+          <div class="timeline-item is-done">
+            <span>09:18</span>
+            <strong>Kostenhinweis gesendet</strong>
+            <p>Einzeiler an Auftraggeber, ohne die komplette Argumentationskette offenzulegen.</p>
+          </div>
+          <div class="timeline-item is-open">
+            <span>offen</span>
+            <strong>Preise einholen</strong>
+            <p>Lieferant und Montage-Subunternehmer liefern die Grundlage der Höhe nach.</p>
           </div>
         </div>
-      </div>
-      <div class="cam-bar">
-        <div class="cam-modes">
-          <span>VIDEO</span><span class="is-active">FOTO</span><span>PANO</span>
+        ${button("Preisabfrage starten")}
+      </section>
+      <aside class="panel">
+        <div class="kicker">Automatisch abgelegt</div>
+        <h3>${SCENARIO.eventId}</h3>
+        <div class="folder-list">
+          <div><b>Nachträge / 00 Frühhinweise</b><span>Kostenhinweis 07.06.</span></div>
+          <div><b>Nachträge / 01 Grundlagen</b><span>LV · Plan · Wärmeschutz</span></div>
+          <div><b>Nachträge / 02 Preise</b><span>Anfragen vorbereitet</span></div>
         </div>
-        <div class="cam-actions">
-          <span class="cam-thumb"></span>
-          <button
-            class="cam-shutter"
-            type="button"
-            data-next
-            aria-label="Shutter"
-          ></button>
-          <span class="cam-flip">⟳</span>
-        </div>
-      </div>
-    </div>
-  </div>`;
+      </aside>
+    </div>`,
+  );
 }
 
 function siteConfirm() {
@@ -624,24 +643,20 @@ function siteConfirm() {
     </div>`;
   }).join('');
 
-  return phone(
-    html`<div class="phone-head">
-        <div>
-          <div class="kicker">Übermittelt</div>
-          <h2 class="phone-title">Ereignis ${SCENARIO.eventId} erfasst</h2>
-        </div>
-        ${chip("OK", "ok")}
+  return browser(
+    html`<div class="panel handoff-confirm">
+      <div class="kicker">Weiter in Oberbauleitung</div>
+      <h2>${SCENARIO.eventId} ist früh gemeldet</h2>
+      <p>
+        Der Prototyp behandelt den Vorgang nicht als vollständig bewiesenen
+        Claim, sondern als früh gesicherten Nachtragskandidaten mit klaren
+        Preis- und Follow-up-Aufgaben.
+      </p>
+      <div class="checklist compact-checklist">
+        ${actionItems}
       </div>
-      <div class="camera" style="height:140px">${rockSvg()}</div>
-      
-      <div style="margin: 12px 0 16px;">
-        <div class="smart-actions-title" style="font-size: 9px; margin-bottom: 6px;">Vollständiger Nachweis (100%)</div>
-        <div class="checklist" style="gap: 4px;">
-          ${actionItems}
-        </div>
-      </div>
-
-      ${button("Weiter")}`
+      ${button("Preisarbeit öffnen")}
+    </div>`,
   );
 }
 
@@ -656,8 +671,8 @@ function evidenceGraph() {
     let noteHtml = "";
     if (c.note) {
       noteHtml = resolved
-        ? `<p class="mono" style="color:var(--ok);font-size:11px;margin:6px 0 0">✓ Gegenzeichnung angefordert</p>`
-        : `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`;
+        ? `<p class="mono" style="color:var(--ok);font-size:11px;margin:6px 0 0">✓ als Reserveargument markiert</p>`
+        : `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">! ${c.note}</p>`;
     }
     return `<div class="mini-panel">
       <div class="metadata-grid" style="margin-bottom:6px">
@@ -671,17 +686,21 @@ function evidenceGraph() {
 
   return browser(
     html`<div class="panel">
-      <h2>Nachweisstruktur · ${SCENARIO.claimId}</h2>
-      <p>Das Baustellenereignis wurde klassifiziert und die Nachweise den Prüfkategorien zugeordnet.</p>
+      <h2>Argumentationsstruktur · ${SCENARIO.claimId}</h2>
+      <p>
+        Die Akte trennt Erstpaket und Reserveargumente. Der Kunde bekommt zuerst
+        ein schlankes Nachtragsangebot; Detailbelege bleiben griffbereit für
+        den erwartbaren Einwand.
+      </p>
       <div class="resolve-layout">
         <div>
-          <h3 style="margin-bottom:12px">${chip("dem Grunde nach", "blue")} Anspruchsbegründung</h3>
+          <h3 style="margin-bottom:12px">${chip("dem Grunde nach", "blue")} Vertragsinterpretation</h3>
           <div style="display:flex;flex-direction:column;gap:8px">
             ${groundCards.map(renderCard).join("")}
           </div>
         </div>
         <div>
-          <h3 style="margin-bottom:12px">${chip("der Höhe nach", "ok")} Preisnachweis</h3>
+          <h3 style="margin-bottom:12px">${chip("der Höhe nach", "ok")} Preisgrundlagen</h3>
           <div style="display:flex;flex-direction:column;gap:8px">
             ${heightCards.map(renderCard).join("")}
           </div>
@@ -695,8 +714,8 @@ function evidenceGraph() {
         data-resolve-ground
       >
         ${resolved
-          ? "AG-Gegenzeichnung angefordert"
-          : "Fehlende Gegenzeichnung anfordern"}
+          ? "Reserveargumente vorbereitet"
+          : "Reserveargumente markieren"}
       </button>
       ${button("Weiter →")}
     </div>`,
@@ -761,6 +780,10 @@ function pricingEvidenceMap() {
   return browser(
     html`<div class="panel">
       <h2>Kostennachweis · ${SCENARIO.claimId}</h2>
+      <p>
+        Der Entwurf übernimmt Preise aus Lieferanten- und NU-Angeboten, zeigt
+        aber offen, welche Preisbasis noch nachgeschärft werden muss.
+      </p>
       <div class="resolve-layout">
         <div style="display:flex;flex-direction:column;gap:4px">
           ${costLines}
@@ -781,17 +804,17 @@ function pricingEvidenceMap() {
         type="button"
         data-resolve-height
       >
-        ${resolved ? "Nachweise vollständig" : "Fehlende Nachweise ergänzen"}
+        ${resolved ? "Kalkulation prüffähig" : "Preisbasis ergänzen"}
       </button>
       <div class="sum" style="margin-top:14px">
-        Urkalkulation fortgeschrieben · Nachtragssumme ≈ ${SCENARIO.pricing.total}
+        Erstangebot kompakt · Nachtragssumme ≈ ${SCENARIO.pricing.total}
       </div>
       <br />${button("Weiter →")}
     </div>`,
   );
 }
 
-// <!-- ============ SILO 2: KAUFMÄNNISCH (screens 5–8) ============ -->
+// <!-- ============ SILO 2: KALKULATION / ERSTANGEBOT ============ -->
 function browser(content, url = "app.nachweis.bau/nachtraege", laptop = false) {
   return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(14,26,36,.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
 }
@@ -800,18 +823,18 @@ function commercialDashboard() {
   return browser(
     html`<div class="dashboard-grid">
       <div class="panel">
-        <div class="kicker">Nachtrag-Dashboard</div>
-        <h2>Offene Nachträge</h2>
+        <div class="kicker">Nachtrags-Cockpit</div>
+        <h2>Frühhinweise und offene Nachträge</h2>
         <div class="kpis">
           <div class="mini-panel kpi">
-            <span class="mono">offen</span><strong>7</strong>
+            <span class="mono">Frühhinweise</span><strong>4</strong>
           </div>
           <div class="mini-panel kpi">
             <span class="mono">Volumen</span><strong>142k€</strong>
           </div>
           <div class="mini-panel kpi">
-            <span class="mono">Fristen</span
-            ><strong style="color:var(--flag)">3</strong>
+            <span class="mono">Follow-ups</span
+            ><strong style="color:var(--flag)">6</strong>
           </div>
         </div>
         <table>
@@ -820,40 +843,40 @@ function commercialDashboard() {
               <th>ID</th>
               <th>Titel</th>
               <th>Status</th>
-              <th>Frist</th>
+              <th>Nächster Schritt</th>
               <th>Wert</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>N‑201</td>
-              <td>Mehrstahl Decke C</td>
+              <td>Brandschutzverglasung Treppenhaus</td>
               <td>${chip("Prüfung", "blue")}</td>
-              <td>8 Tage</td>
+              <td>NU-Angebot fehlt</td>
               <td>11.900 €</td>
             </tr>
             <tr class="highlight" tabindex="0" data-next>
               <td>${SCENARIO.claimId}</td>
               <td><strong>${SCENARIO.title}</strong></td>
-              <td>${chip("Neu", "flag")}</td>
-              <td>${chip("4 Tage", "flag")}</td>
+              <td>${chip("Frühhinweis", "flag")}</td>
+              <td>${chip("Preise einholen", "flag")}</td>
               <td>${SCENARIO.pricing.total}</td>
             </tr>
             <tr>
               <td>N‑205</td>
-              <td>Provisorische Entwässerung</td>
+              <td>Außenraffstore geänderte Führungsschiene</td>
               <td>${chip("Entwurf")}</td>
-              <td>12 Tage</td>
+              <td>Antwort AG offen</td>
               <td>6.400 €</td>
             </tr>
           </tbody>
         </table>
       </div>
       <aside class="panel">
-        <div class="kicker">Eingang von Baustelle</div>
+        <div class="kicker">Eingang aus technischer Klärung</div>
         <h3>${SCENARIO.eventId}</h3>
         <p>${SCENARIO.note}</p>
-        ${chip(SCENARIO.metadata[1], "blue")}
+        ${chip("Kostenhinweis gesendet", "ok")}
         ${chip(SCENARIO.bauist.depth, "flag")}<br /><br />${button(
           "N‑204 öffnen",
         )}
@@ -865,7 +888,7 @@ function commercialDashboard() {
 function deviationHero() {
   return browser(
     html`<div class="panel">
-      <h2>Bausoll ↔ Bau-Ist</h2>
+      <h2>Bausoll ↔ Ausführungsanforderung</h2>
       <div class="compare">
         <div class="mini-panel">
           <h3>Bausoll</h3>
@@ -887,20 +910,20 @@ function deviationHero() {
         </div>
         <div class="vs"><span>ABW.</span></div>
         <div class="mini-panel">
-          <h3>Bau-Ist</h3>
+          <h3>Ausführungsanforderung</h3>
           <div class="spec-list">
             <div class="spec-line">
-              <span>Befund</span><strong>${SCENARIO.bauist.description}</strong>
+              <span>Quelle</span><strong>${SCENARIO.bauist.description}</strong>
             </div>
             <div class="spec-line">
-              <span>Tiefe</span><strong>${SCENARIO.bauist.depth}</strong>
+              <span>Dokument</span><strong>${SCENARIO.bauist.depth}</strong>
             </div>
             <div class="spec-line">
-              <span>Mehrmenge</span
+              <span>Mehrleistung</span
               ><strong>${SCENARIO.bauist.extraQuantity}</strong>
             </div>
             <div class="spec-line">
-              <span>Verfahren</span><strong>${SCENARIO.bauist.method}</strong>
+              <span>Aktion</span><strong>${SCENARIO.bauist.method}</strong>
             </div>
           </div>
         </div>
@@ -914,11 +937,11 @@ function deviationHero() {
               )
               .join("")}
           </div>
-          <p class="mono" style="margin:14px 0 5px">Vollständigkeit 68 %</p>
-          <div class="meter"><span></span></div>
+          <p class="mono" style="margin:14px 0 5px">Bereitschaft 62 %</p>
+          <div class="meter" style="--value:62%"><span></span></div>
         </aside>
       </div>
-      <br />${button("Nachweise prüfen")}
+      <br />${button("Argumentation strukturieren")}
     </div>`,
   );
 }
@@ -929,34 +952,37 @@ function commercialConfirm() {
       class="panel"
       style="text-align:center;max-width:720px;margin:70px auto"
     >
-      <div class="kicker">Übergabe</div>
-      <h2>Nachtragsakte ${SCENARIO.claimId} — 95 % bereit</h2>
+      <div class="kicker">Erstangebot</div>
+      <h2>Nachtragsangebot ${SCENARIO.claimId} — 95 % bereit</h2>
       <p>
-        Abweichung, Nachweise, Mengen und Urkalkulationsbezug sind strukturiert.
-        Die Akte geht jetzt an Recht zur rechtlichen Freigabe.
+        Das Paket ist bewusst schlank: Kostenhinweis, Leistungsänderung,
+        Preisbasis und Summe sind versandbereit. Die volle Argumentation bleibt
+        für eine Ablehnung vorbereitet.
       </p>
       <div class="metadata-grid" style="justify-content:center">
-        ${chip("Bausoll/Bau-Ist geklärt", "ok")} ${chip("Frist gewahrt", "ok")}
+        ${chip("Kostenhinweis dokumentiert", "ok")}
+        ${chip("Reserveargumente intern", "flag")}
         ${chip(SCENARIO.pricing.total, "ok")}
       </div>
-      ${button("An Recht übergeben")}
+      ${button("Versand und Follow-up planen")}
     </div>`,
   );
 }
 
-// <!-- ============ SILO 3: RECHT (screens 9–11) ============ -->
+// <!-- ============ SILO 3: DURCHSETZEN / FOLLOW-UP ============ -->
 function legalQueue() {
   return browser(
     html`<div class="panel">
-      <div class="kicker">Freigabe-Queue</div>
-      <h2>1 Nachtragsakte zur Freigabe</h2>
+      <div class="kicker">Follow-up-Queue</div>
+      <h2>Nach Versand beginnt die zweite Hälfte</h2>
       <div class="queue-item" tabindex="0" data-next>
         <div>
           <h3>${SCENARIO.claimId} · ${SCENARIO.title}</h3>
-          <p>${SCENARIO.project} · 95 % bereit · ${SCENARIO.pricing.total}</p>
+          <p>${SCENARIO.project} · Erstangebot versendet · ${SCENARIO.pricing.total}</p>
           <div class="metadata-grid">
             ${chip("Frist gewahrt", "ok")}
-            ${chip("1 offener Prüfpunkt", "flag")} ${chip("§ 2 VOB/B", "blue")}
+            ${chip("Antwort AG erwartet", "flag")}
+            ${chip("Reserveargumente bereit", "blue")}
           </div>
         </div>
         <button class="btn" type="button" data-next>Öffnen</button>
@@ -974,8 +1000,8 @@ function legalReview() {
   );
   return browser(
     html`<div class="panel">
-      <div class="kicker">Rechtliche Prüfung</div>
-      <h2>Belastbarkeit prüfen</h2>
+      <div class="kicker">Ablehnungsszenario</div>
+      <h2>Gezielt auf den Einwand reagieren</h2>
       <div class="resolve-layout">
         <div>
           <div class="checklist">
@@ -995,16 +1021,17 @@ function legalReview() {
             data-resolve-legal
           >
             ${resolved
-              ? "Letzter Prüfpunkt erledigt"
-              : "Formulierung bestätigen"}
+              ? "Antwortbaustein vorbereitet"
+              : "Antwortbaustein vorbereiten"}
           </button>
         </div>
         <aside class="mini-panel">
-          <h3>Begründungsentwurf</h3>
+          <h3>Reserveantwort</h3>
           <p>
-            Die angetroffene Bodenklasse ${SCENARIO.bauist.description} weicht
-            vom vertraglich geschuldeten ${SCENARIO.bausoll.description} ab. Die
-            geänderte Leistung wurde angeordnet und fristgerecht angekündigt.
+            Ihr Einwand, die Leistung sei bereits vom LV umfasst, wird anhand
+            des Widerspruchs zwischen ${SCENARIO.bausoll.lv}, Plan F-12 und
+            Detail F-17 beantwortet. Die Mehrkosten wurden vor Bestellung
+            angezeigt und auf Lieferanten-/NU-Angebote gestützt.
           </p>
           <div class="metadata-grid">
             ${chip(SCENARIO.bauist.order, resolved ? "ok" : "flag")}
@@ -1013,7 +1040,7 @@ function legalReview() {
         </aside>
       </div>
       <br />${button(
-        "Als belastbar bestätigen & freigeben",
+        "Follow-up-Set freigeben",
         resolved ? "data-next" : "data-resolve-legal",
       )}
     </div>`,
@@ -1027,11 +1054,16 @@ function signoffExport() {
     html`<div class="doc-preview">
       <aside class="panel">
         <div class="kicker">Status</div>
-        <h2 style="color:var(--ok)">Belastbar – freigegeben</h2>
-        <p>Die prüffähige Nachtragsakte ist bereit für Export und Versand.</p>
+        <h2 style="color:var(--ok)">Versand- und Follow-up-Set bereit</h2>
+        <p>
+          Die Akte enthält Erstangebot, interne Reserveargumentation und die
+          nächste Wiedervorlage, damit der Nachtrag nicht nach dem Versand liegen
+          bleibt.
+        </p>
         <div class="metadata-grid">
           ${chip(SCENARIO.claimId, "blue")}
-          ${chip(SCENARIO.pricing.total, "ok")} ${chip("Legal sign-off", "ok")}
+          ${chip(SCENARIO.pricing.total, "ok")}
+          ${chip("Follow-up T+7", "ok")}
         </div>
         <button class="btn ok" type="button" data-export>
           Nachtragsakte exportieren (PDF)</button
@@ -1039,7 +1071,7 @@ function signoffExport() {
       </aside>
       <div class="document">
         <div class="kicker">Dokumentvorschau</div>
-        <h3>Prüffähige Nachtragsakte · ${SCENARIO.claimId}</h3>
+        <h3>Nachtragsakte · ${SCENARIO.claimId}</h3>
         <p><strong>${SCENARIO.title}</strong><br />${SCENARIO.project}</p>
         <table>
           <tbody>
