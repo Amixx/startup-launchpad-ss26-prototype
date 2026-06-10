@@ -20,9 +20,6 @@ concurrency:
 jobs:
   deploy:
     if: github.event_name != 'delete' || github.event.ref_type == 'branch'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
