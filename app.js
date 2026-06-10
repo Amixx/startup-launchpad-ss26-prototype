@@ -797,20 +797,53 @@ function browser(content, url = "app.nachweis.bau/nachtraege", laptop = false) {
 }
 
 function commercialDashboard() {
+  const lifecycle = [
+    {
+      label: "Erfasst",
+      type: "blue",
+      note: "Mitarbeiter hat Abweichung erkannt und angelegt",
+    },
+    {
+      label: "In Bearbeitung",
+      type: "flag",
+      note: "Unterlagen und Preise werden ergänzt",
+    },
+    {
+      label: "Intern geprüft",
+      type: "ok",
+      note: "technisch/kaufmännisch plausibilisiert",
+    },
+    {
+      label: "Eingereicht / offen",
+      type: "client",
+      note: "beim AG, Antwortfrist läuft",
+    },
+    { label: "AG anerkannt", type: "ok", note: "vom Auftraggeber bestätigt" },
+    { label: "AG abgelehnt", type: "reject", note: "Einwand bearbeiten" },
+  ];
+  const lifecycleLegend = lifecycle
+    .map(
+      (item) => `<div class="status-key">
+        ${chip(item.label, item.type)}
+        <span>${item.note}</span>
+      </div>`,
+    )
+    .join("");
+
   return browser(
     html`<div class="dashboard-grid">
       <div class="panel">
         <div class="kicker">Nachtrag-Dashboard</div>
-        <h2>Offene Nachträge</h2>
+        <h2>Nachtragsübersicht</h2>
         <div class="kpis">
           <div class="mini-panel kpi">
-            <span class="mono">offen</span><strong>7</strong>
+            <span class="mono">Erfasst</span><strong>4</strong>
           </div>
           <div class="mini-panel kpi">
             <span class="mono">Volumen</span><strong>142k€</strong>
           </div>
           <div class="mini-panel kpi">
-            <span class="mono">Fristen</span
+            <span class="mono">AG-Fristen</span
             ><strong style="color:var(--flag)">3</strong>
           </div>
         </div>
@@ -820,7 +853,8 @@ function commercialDashboard() {
               <th>ID</th>
               <th>Titel</th>
               <th>Status</th>
-              <th>Frist</th>
+              <th>AG-Antwort bis</th>
+              <th>Nächster Schritt</th>
               <th>Wert</th>
             </tr>
           </thead>
@@ -828,26 +862,32 @@ function commercialDashboard() {
             <tr>
               <td>N‑201</td>
               <td>Mehrstahl Decke C</td>
-              <td>${chip("Prüfung", "blue")}</td>
-              <td>8 Tage</td>
+              <td>${chip("In Bearbeitung", "flag")}</td>
+              <td><span class="deadline-note">noch nicht eingereicht</span></td>
+              <td>Mengennachweis fehlt</td>
               <td>11.900 €</td>
             </tr>
             <tr class="highlight" tabindex="0" data-next>
               <td>${SCENARIO.claimId}</td>
               <td><strong>${SCENARIO.title}</strong></td>
-              <td>${chip("Neu", "flag")}</td>
-              <td>${chip("4 Tage", "flag")}</td>
+              <td>${chip("Erfasst", "blue")}</td>
+              <td><span class="deadline-note">nach Einreichung T+7</span></td>
+              <td>${chip("Nachweise prüfen", "flag")}</td>
               <td>${SCENARIO.pricing.total}</td>
             </tr>
             <tr>
               <td>N‑205</td>
               <td>Provisorische Entwässerung</td>
-              <td>${chip("Entwurf")}</td>
-              <td>12 Tage</td>
+              <td>${chip("Eingereicht / offen", "client")}</td>
+              <td><strong>17.06.</strong></td>
+              <td>Antwort AG offen</td>
               <td>6.400 €</td>
             </tr>
           </tbody>
         </table>
+        <div class="status-legend">
+          ${lifecycleLegend}
+        </div>
       </div>
       <aside class="panel">
         <div class="kicker">Eingang von Baustelle</div>
@@ -857,6 +897,11 @@ function commercialDashboard() {
         ${chip(SCENARIO.bauist.depth, "flag")}<br /><br />${button(
           "N‑204 öffnen",
         )}
+        <div class="integration-note">
+          <strong>Belegquellen:</strong>
+          Nachweis bündelt relevante Belege aus Projektordnern, Tickets, Plänen
+          und Baustellendokumentation in einen prüffähigen Nachtragsprozess.
+        </div>
       </aside>
     </div>`,
   );

@@ -486,6 +486,18 @@ p {
   color: #0d4bb3;
 }
 
+.chip.client {
+  border-color: rgba(99, 102, 241, 0.42);
+  background: rgba(99, 102, 241, 0.1);
+  color: #3431a2;
+}
+
+.chip.reject {
+  border-color: rgba(215, 73, 58, 0.46);
+  background: rgba(215, 73, 58, 0.09);
+  color: #9d2f25;
+}
+
 .btn {
   border: 1px solid var(--accent-dark);
   background: var(--accent);
@@ -918,6 +930,49 @@ tr.highlight {
   background: rgba(31, 111, 235, 0.08);
 }
 
+.deadline-note {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.status-legend {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.status-key {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.status-key span:last-child {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.integration-note {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.integration-note strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink);
+}
+
 .compare {
   display: grid;
   grid-template-columns: 1fr 92px 1fr 260px;
@@ -1117,6 +1172,11 @@ tr.highlight {
 
   .status-wrap {
     justify-items: start;
+  }
+
+  .status-legend,
+  .status-key {
+    grid-template-columns: 1fr;
   }
 
   .frame-browser,
