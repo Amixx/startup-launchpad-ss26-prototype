@@ -462,10 +462,10 @@ function planInbox() {
         </table>
       </div>
       <aside class="panel">
-        <div class="kicker">Michael-Stark-Learning</div>
+        <div class="kicker">Workflow-Hinweis</div>
         <h3>Planänderung vor Baustelle</h3>
         <p>
-          90% der SF-Bau-Nachträge entstehen laut Interview deutlich früher:
+          Viele SF-Bau-Nachträge entstehen nicht erst auf der Baustelle, sondern
           wenn neue Pläne und Berichte eintreffen und gegen das Bausoll geprüft
           werden müssen.
         </p>

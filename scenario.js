@@ -1,5 +1,5 @@
 // <!-- ============ SCENARIO DATA ============ -->
-// Michael Stark preview: plan-driven Schlüsselfertigbau change recognition.
+// Plan-driven Schlüsselfertigbau change recognition.
 const SCENARIO = {
   product: {
     name: "Nachweis",
