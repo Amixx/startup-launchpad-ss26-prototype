@@ -962,7 +962,7 @@ function signoffExport() {
     html`<div class="doc-preview">
       <aside class="panel">
         <div class="kicker">Status</div>
-        <h2 style="color:var(--ok)">Änderungsmitteilung freigegeben</h2>
+        <h2 style="color:var(--ok);font-size:24px;line-height:1.08;overflow-wrap:anywhere">Änderungsmitteilung freigegeben</h2>
         <p>Die Entscheidungsvorlage ist bereit für Export und AG-Abstimmung.</p>
         <div class="metadata-grid">
           ${chip(SCENARIO.claimId, "blue")}
