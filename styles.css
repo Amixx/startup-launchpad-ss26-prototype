@@ -925,6 +925,100 @@ tr.highlight {
   align-items: stretch;
 }
 
+.plan-review-grid {
+  display: grid;
+  grid-template-columns: 1fr 72px 1fr 280px;
+  gap: 14px;
+  align-items: stretch;
+}
+
+.plan-sheet {
+  position: relative;
+  min-height: 360px;
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 34px 34px,
+    #fff;
+  overflow: hidden;
+}
+
+.plan-sheet.is-new {
+  background:
+    linear-gradient(90deg, rgba(224, 161, 0, 0.12) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(rgba(224, 161, 0, 0.12) 1px, transparent 1px) 0 0 / 34px 34px,
+    #fffaf0;
+}
+
+.revision-cloud {
+  position: absolute;
+  top: 86px;
+  left: 50%;
+  width: 155px;
+  height: 88px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  border: 3px dashed rgba(31, 111, 235, 0.6);
+  border-radius: 48% 42% 53% 45%;
+  color: var(--accent-dark);
+  font-family: var(--mono);
+  font-size: 32px;
+  font-weight: 900;
+}
+
+.cloud-b {
+  border-color: rgba(215, 73, 58, 0.72);
+  color: var(--alert);
+}
+
+.wall-line {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 214px;
+  height: 16px;
+  background: rgba(14, 26, 36, 0.55);
+}
+
+.wall-line.is-flagged {
+  background: var(--alert);
+  box-shadow: 0 0 0 8px rgba(215, 73, 58, 0.12);
+}
+
+.plan-label {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.doc-matrix {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.is-open-doc {
+  border-color: rgba(224, 161, 0, 0.6);
+  background: rgba(224, 161, 0, 0.08);
+}
+
+.processing-panel {
+  min-height: 420px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 620px);
+  gap: 28px;
+  align-items: center;
+  justify-content: center;
+}
+
 .vs {
   display: grid;
   place-items: center;
@@ -1104,7 +1198,10 @@ tr.highlight {
   .topbar,
   .dashboard-grid,
   .compare,
+  .plan-review-grid,
   .resolve-layout,
+  .doc-matrix,
+  .processing-panel,
   .doc-preview {
     grid-template-columns: 1fr;
   }

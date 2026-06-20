@@ -9,34 +9,33 @@ const state = {
   processingTimeout: null,
   hotspotTimeout: null,
   toggledActions: {},
-  selectedPricingRowId: "P05",
+  selectedPricingRowId: "C03",
 };
 
 const screens = [
-  { id: "s1", silo: "site", number: "01", render: siteHome },
-  { id: "s2", silo: "site", number: "02", render: voiceCapture },
+  { id: "s1", silo: "site", number: "01", render: planInbox },
+  { id: "s2", silo: "site", number: "02", render: revisionCloudReview },
   { id: "s3", silo: "site", number: "02b", render: aiProcessing },
-  { id: "s4", silo: "site", number: "03", render: aiSummaryActions },
-  { id: "s5", silo: "site", number: "04", render: siteCapture },
-  { id: "s6", silo: "site", number: "05", render: siteConfirm },
+  { id: "s4", silo: "site", number: "03", render: planClassification },
+  { id: "s5", silo: "site", number: "04", render: bausollMatrix },
   {
     id: "s7",
     silo: "commercial",
-    number: "06",
+    number: "05",
     render: commercialDashboard,
   },
-  { id: "s8", silo: "commercial", number: "07", render: deviationHero },
-  { id: "s8b", silo: "commercial", number: "07b", render: evidenceGraph },
-  { id: "s8c", silo: "commercial", number: "07c", render: pricingEvidenceMap },
+  { id: "s8", silo: "commercial", number: "06", render: deviationHero },
+  { id: "s8b", silo: "commercial", number: "07", render: evidenceGraph },
+  { id: "s8c", silo: "commercial", number: "08", render: pricingEvidenceMap },
   {
     id: "s10",
     silo: "commercial",
-    number: "08",
+    number: "09",
     render: commercialConfirm,
   },
-  { id: "s11", silo: "legal", number: "09", render: legalQueue },
-  { id: "s12", silo: "legal", number: "10", render: legalReview },
-  { id: "s13", silo: "legal", number: "11", render: signoffExport },
+  { id: "s11", silo: "legal", number: "10", render: legalQueue },
+  { id: "s12", silo: "legal", number: "11", render: legalReview },
+  { id: "s13", silo: "legal", number: "12", render: signoffExport },
 ];
 
 const stage = document.querySelector("#stage");
@@ -373,7 +372,7 @@ function restart() {
   state.legalResolved = false;
   state.exported = false;
   state.lastSilo = null;
-  state.selectedPricingRowId = "P05";
+  state.selectedPricingRowId = "C03";
   toast.classList.remove("is-visible");
   render();
 }
@@ -388,9 +387,9 @@ function resolveHeight() {
   render();
 }
 
-// Claim completeness climbs as the two commercial maps are completed:
-// 68 % captured on site → +14 entitlement evidence → +13 pricing evidence → 95 %.
-// Legal closes the final 5 % (the BL‑44 reference) downstream.
+// Bausoll confidence climbs as the plan/document matrix and the change notice are completed:
+// 68 % initial AI triage → +14 checked source docs → +13 cost/risk estimate → 95 %.
+// Approval closes the final wording risk downstream.
 function claimCompleteness() {
   return (
     68 + (state.groundResolved ? 14 : 0) + (state.heightResolved ? 13 : 0)
@@ -408,298 +407,371 @@ function exportPdf() {
   setTimeout(() => toast.classList.remove("is-visible"), 2200);
 }
 
-// <!-- ============ SILO 1: BAUSTELLE ============ -->
-function phone(content) {
-  return `<div class="frame-phone"><div class="phone-glass"><div class="phone-status"><span>09:14</span><span>5G ▰▰▰ 84%</span></div><div class="phone-content">${content}</div></div></div>`;
+// <!-- ============ SHARED DESKTOP FRAME ============ -->
+function browser(content, url = "app.nachweis.bau/nachtraege", laptop = false) {
+  return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(14,26,36,.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
 }
 
-function siteHome() {
-  return phone(
-    html`<div class="site-home">
-        <div class="phone-head">
-          <div>
-            <div class="kicker">${SCENARIO.project}</div>
-            <h2 class="phone-title">Ereignisse Baustelle</h2>
+function planInbox() {
+  return browser(
+    html`<div class="dashboard-grid">
+      <div class="panel">
+        <div class="kicker">Planprüfung · ${SCENARIO.project}</div>
+        <h2>Neue Planrevision mit Nachtragspotenzial</h2>
+        <p>${SCENARIO.note}</p>
+        <div class="kpis">
+          <div class="mini-panel kpi">
+            <span class="mono">Revisionspaket</span><strong>${SCENARIO.eventId}</strong>
           </div>
-          ${chip("Polier", "blue")}
+          <div class="mini-panel kpi">
+            <span class="mono">Unterlagen</span><strong>6</strong>
+          </div>
+          <div class="mini-panel kpi">
+            <span class="mono">Start Ausführung</span><strong style="color:var(--flag)">9T</strong>
+          </div>
         </div>
-        <div class="site-home__action">
-          <button class="btn site-home__button" type="button" data-next>
-            <span>🎙️</span> Abweichung melden
-          </button>
-        </div>
-      </div>`,
+        <table>
+          <thead>
+            <tr>
+              <th>Quelle</th>
+              <th>Planstand</th>
+              <th>Status</th>
+              <th>Hinweis</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Grundriss A‑203</td>
+              <td>Rev. 08</td>
+              <td>${chip("Revisionswolke", "flag")}</td>
+              <td>Achse B4 markiert</td>
+            </tr>
+            <tr class="highlight" tabindex="0" data-next>
+              <td>Brandschutzbericht</td>
+              <td>Rev. 08</td>
+              <td>${chip("Konflikt", "flag")}</td>
+              <td>F90 statt F0</td>
+            </tr>
+            <tr>
+              <td>Bauphysikkatalog</td>
+              <td>Rev. 03</td>
+              <td>${chip("ungeprüft")}</td>
+              <td>Raumabschluss offen</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="panel">
+        <div class="kicker">Michael-Stark-Learning</div>
+        <h3>Planänderung vor Baustelle</h3>
+        <p>
+          90% der SF-Bau-Nachträge entstehen laut Interview deutlich früher:
+          wenn neue Pläne und Berichte eintreffen und gegen das Bausoll geprüft
+          werden müssen.
+        </p>
+        ${chip("Bausoll = das A und O", "blue")}
+        ${chip("Komplettheitsklausel", "flag")}<br /><br />${button(
+          "Revisionswolke prüfen",
+        )}
+      </aside>
+    </div>`,
+    "app.nachweis.bau/planpruefung",
   );
 }
 
-function voiceCapture() {
-  return phone(
-    html`<div class="phone-head">
-        <div>
-          <div class="kicker">Sprachaufzeichnung</div>
-          <h2 class="phone-title">Beschreibe die Abweichung</h2>
+function revisionCloudReview() {
+  return browser(
+    html`<div class="panel">
+      <div class="kicker">Revisionsvergleich · ${SCENARIO.eventId}</div>
+      <h2>Was hat sich gegenüber dem Vertragsstand geändert?</h2>
+      <div class="plan-review-grid">
+        <div class="plan-sheet">
+          <div class="revision-cloud cloud-a">F0</div>
+          <div class="wall-line"></div>
+          <div class="plan-label">A‑203 Rev. 03 · Vertragsbasis</div>
         </div>
-        ${chip("NEU", "flag")}
-      </div>
-      <div class="voice-record-container">
-        <div class="voice-status-label">Aufnahme läuft...</div>
-
-        <div class="mic-container">
-          <div class="mic-voice-ring ring-a"></div>
-          <div class="mic-voice-ring ring-b"></div>
-          <div class="mic-voice-ring ring-c"></div>
-          <div class="mic-btn" role="img" aria-label="Recording in progress">
-            ⏹️
+        <div class="vs"><span>↔</span></div>
+        <div class="plan-sheet is-new">
+          <div class="revision-cloud cloud-b">F90</div>
+          <div class="wall-line is-flagged"></div>
+          <div class="plan-label">BSK Rev. 08 · neue Anforderung</div>
+        </div>
+        <aside class="mini-panel">
+          <h3>Automatisch erkannt</h3>
+          <div class="checklist">
+            <div class="check"><span>Revisionswolke Achse B4</span><b>✓</b></div>
+            <div class="check"><span>F0 ↔ F90 Widerspruch</span><b>✓</b></div>
+            <div class="check open"><span>Bauphysik-Gegencheck fehlt</span><b>!</b></div>
           </div>
-        </div>
-
-        <div class="voice-transcript">
-          <p class="mono" id="live-transcript-text"></p>
-        </div>
-
-        <button class="btn" style="width:100%" type="button" data-next>
-          Sprachaufzeichnung beenden
-        </button>
-      </div>`
+        </aside>
+      </div>
+      <br />${button("Bausoll-Abgleich starten")}
+    </div>`,
+    "app.nachweis.bau/planpruefung",
   );
 }
 
 function aiProcessing() {
-  return phone(
-    html`<div class="ai-processing-container">
-      <div class="processing-spinner-box">
-        <div class="spinner-ring"></div>
-        <span class="system-badge-pulsing">✨ Strukturierung...</span>
+  return browser(
+    html`<div class="panel processing-panel">
+      <div class="spinner-ring"></div>
+      <div>
+        <div class="kicker">Planpaket wird strukturiert...</div>
+        <h2>Revisionswolken, Berichte und Bausoll werden abgeglichen</h2>
+        <p>Nachweis ordnet die Änderung den Vertragsunterlagen zu und markiert, welche Dokumente noch geprüft werden müssen.</p>
       </div>
-      <div class="processing-info" style="text-align: center; margin-top: 24px;">
-        <div class="kicker">Sprachaufnahme wird verarbeitet...</div>
-        <h3 class="phone-title" style="margin-top: 8px; font-size: 18px;">Analyse läuft...</h3>
-      </div>
-    </div>`
+    </div>`,
+    "app.nachweis.bau/planpruefung",
   );
 }
 
-function aiSummaryActions() {
+function planClassification() {
   const sum = SCENARIO.aiSummary;
-
-  let causeLabel = sum.ursache;
-  let causeType = "flag";
-  if (sum.ursache === "ag_instruction") { causeLabel = "Anordnung durch AG / Architekt"; causeType = "blue"; }
-  else if (sum.ursache === "changed_conditions") causeLabel = "Geänderte Gegebenheiten vor Ort";
-  else if (sum.ursache === "plan_contradiction") causeLabel = "Widerspruch in Planungsunterlagen";
-  else if (sum.ursache === "other") { causeLabel = "Sonstiges"; causeType = ""; }
-
-  const hasDelay = sum.terminauswirkung.status === "delay";
-  const termChip = chip(
-    hasDelay ? `${sum.terminauswirkung.duration} Verzögerung erwartet` : "Keine Verzögerung",
-    hasDelay ? "flag" : "ok",
-  );
-
-  const rows = [
-    { label: "Soll-Ist-Abgleich", val: `<div class="soll-ist-compare">
-      <div class="compare-row soll"><span class="compare-label">Soll</span><span class="compare-val">${sum.spiegel.soll}</span></div>
-      <div class="compare-row ist"><span class="compare-label">Ist</span><span class="compare-val">${sum.spiegel.ist}</span></div>
-    </div>` },
-    { label: "Ursache", val: chip(causeLabel, causeType) },
-    { label: "Anordnung", val: sum.instruction },
-  ];
-
-  const summaryRows = rows.map(row => `
-    <div class="summary-row">
-      <div class="summary-label">${row.label}</div>
-      <div class="summary-val">${row.val}</div>
-    </div>
-  `).join('');
-
+  const termChip = chip(`${sum.terminauswirkung.duration}`, "flag");
   const manualItems = SCENARIO.smartActions
-    .filter(a => !a.auto)
-    .map(action => {
-      const isPhoto = action.id === "action-photo";
-      return `<div class="action-item is-open"${isPhoto ? ' data-next style="cursor:pointer"' : ''}>
-        <div class="action-item-left">
-          <span class="action-item-icon">${action.icon}</span>
-          <strong>${action.task}</strong>
-        </div>
-        <span class="action-status-icon">▢</span>
-      </div>`;
-    }).join('');
+    .filter((a) => !a.auto)
+    .map(
+      (action) => `<div class="check open">
+        <span>${action.icon} ${action.task}</span><b>offen</b>
+      </div>`,
+    )
+    .join("");
+  const autoItems = SCENARIO.smartActions
+    .filter((a) => a.auto)
+    .map(
+      (action) => `<div class="check">
+        <span>${action.icon} ${action.task}</span><b>✓</b>
+      </div>`,
+    )
+    .join("");
 
-  const autoTasks = SCENARIO.smartActions.filter(a => a.auto).map(a => a.task).join(' · ');
-  const autoItem = `<div class="action-item is-auto">
-    <div class="action-item-left">
-      <span>${autoTasks}</span>
-    </div>
-    <div class="action-badge auto">Auto</div>
-    <span class="action-status-icon">✓</span>
-  </div>`;
-
-  return phone(
-    html`<div class="ai-container">
-      <div class="ai-summary-card">
-        <div class="summary-title">
-          <h3>Mögliche Abweichung</h3>
-          ${chip(SCENARIO.bausoll.lv, "blue")}
+  return browser(
+    html`<div class="panel">
+      <div class="kicker">KI-Triage</div>
+      <h2>Mögliche geänderte Leistung erkannt</h2>
+      <div class="resolve-layout">
+        <div class="mini-panel">
+          <h3>${sum.what}</h3>
+          <div class="metadata-grid">
+            ${chip(sum.location.bauteil, "blue")} ${chip(sum.location.geschoss, "blue")}
+            ${termChip}
+          </div>
+          <div class="soll-ist-compare">
+            <div class="compare-row soll"><span class="compare-label">Bausoll</span><span class="compare-val">${sum.spiegel.soll}</span></div>
+            <div class="compare-row ist"><span class="compare-label">Neue Revision</span><span class="compare-val">${sum.spiegel.ist}</span></div>
+          </div>
+          <p style="margin-top:14px">${sum.instruction}</p>
         </div>
-        <div class="metadata-grid" style="margin:8px 0 4px">
-          ${chip(sum.location.bauteil, "blue")} ${termChip}
-        </div>
-        <div class="summary-grid">
-          ${summaryRows}
-        </div>
-      </div>
-
-      <div class="smart-actions-section">
-        <div class="smart-actions-title">Erforderliche Nachweise</div>
-        <div class="checklist">
-          ${manualItems}
-          ${autoItem}
-        </div>
-      </div>
-
-      <button class="btn" style="width:100%" type="button" data-next>
-        Foto aufnehmen
-      </button>
-    </div>`
-  );
-}
-
-function rockSvg() {
-  return `<img src="excavation-evidence.png" alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab" loading="eager" /><span class="camera__stamp">AUTO: GPS · ZEIT · TIEFE</span>`;
-}
-
-function siteCapture() {
-  return html`<div class="frame-phone camera-phone">
-    <div class="phone-glass">
-      <div class="cam-view">
-        <div class="cam-task-banner">
-          <span>📷</span> Aufgabe: Foto der Felskante mit Maßstab
-        </div>
-        <img
-          src="excavation-evidence.png"
-          alt="Baustellenfoto einer Baugrube mit freigelegter Felskante und gelbem Maßstab"
-          loading="eager"
-        />
-        <div class="cam-top">
-          <span>09:14</span>
-          <div class="cam-top-ctrls"><span>⚡ Auto</span><span>HDR</span></div>
-        </div>
-        <div class="cam-reticle"></div>
-        <div class="cam-flag">${SCENARIO.eventId}</div>
-        <div class="cam-geo">
-          <span class="cam-geo-dot"></span>
-          <div>
-            ${SCENARIO.metadata[0]}<br />${SCENARIO.metadata[1]} ·
-            ${SCENARIO.metadata[3]}<br />${SCENARIO.metadata[4]}
+        <div>
+          <h3>Prüfaufgaben</h3>
+          <div class="checklist">
+            ${autoItems}
+            ${manualItems}
           </div>
         </div>
       </div>
-      <div class="cam-bar">
-        <div class="cam-modes">
-          <span>VIDEO</span><span class="is-active">FOTO</span><span>PANO</span>
-        </div>
-        <div class="cam-actions">
-          <span class="cam-thumb"></span>
-          <button
-            class="cam-shutter"
-            type="button"
-            data-next
-            aria-label="Shutter"
-          ></button>
-          <span class="cam-flip">⟳</span>
-        </div>
-      </div>
-    </div>
-  </div>`;
+      <br />${button("Bausoll-Matrix öffnen")}
+    </div>`,
+    "app.nachweis.bau/planpruefung",
+  );
 }
 
-function siteConfirm() {
-  const actionItems = SCENARIO.smartActions.map(action => {
-    const isCompleted = true;
-    return `<div class="action-item ${isCompleted ? 'is-auto' : 'is-open'}" style="padding: 6px 12px; font-size: 11px;">
-      <div class="action-item-left">
-        <span class="action-item-icon">${action.icon}</span>
-        <span>${action.task}</span>
+function bausollMatrix() {
+  const pct = claimCompleteness();
+  return browser(
+    html`<div class="panel">
+      <div class="kicker">Bausoll-Matrix</div>
+      <h2>Welche Unterlagen wurden schon geprüft?</h2>
+      <div class="doc-matrix">
+        ${SCENARIO.demoWorkflow.evidenceCards
+          .map((card) => {
+            const open = card.id === "D04";
+            return `<div class="mini-panel ${open ? "is-open-doc" : ""}">
+              <div class="metadata-grid">${chip(card.id, "blue")} ${chip(card.type)}</div>
+              <strong>${card.title}</strong>
+              <p>${card.role}</p>
+              ${open ? chip("offen", "flag") : chip("geprüft", "ok")}
+            </div>`;
+          })
+          .join("")}
       </div>
-      <span class="action-status-icon">${isCompleted ? '✓' : '▢'}</span>
-    </div>`;
-  }).join('');
+      <p class="mono" style="margin:18px 0 5px">Bausoll-Prüfung ${pct} %</p>
+      <div class="meter" style="--value:${pct}%"><span></span></div>
+      <br />${button("An Projektteam übergeben")}
+    </div>`,
+    "app.nachweis.bau/planpruefung",
+  );
+}
 
-  return phone(
-    html`<div class="phone-head">
-        <div>
-          <div class="kicker">Übermittelt</div>
-          <h2 class="phone-title">Ereignis ${SCENARIO.eventId} erfasst</h2>
-        </div>
-        ${chip("OK", "ok")}
-      </div>
-      <div class="camera" style="height:140px">${rockSvg()}</div>
-      
-      <div style="margin: 12px 0 16px;">
-        <div class="smart-actions-title" style="font-size: 9px; margin-bottom: 6px;">Vollständiger Nachweis (100%)</div>
-        <div class="checklist" style="gap: 4px;">
-          ${actionItems}
-        </div>
-      </div>
+// <!-- ============ SILO 2: ÄNDERUNGSMITTEILUNG ============ -->
 
-      ${button("Weiter")}`
+function commercialDashboard() {
+  return browser(
+    html`<div class="dashboard-grid">
+      <div class="panel">
+        <div class="kicker">Änderungsmitteilungen</div>
+        <h2>Planänderungen vor dem Nachtrag entscheiden</h2>
+        <div class="kpis">
+          <div class="mini-panel kpi">
+            <span class="mono">in Prüfung</span><strong>4</strong>
+          </div>
+          <div class="mini-panel kpi">
+            <span class="mono">ca.-Volumen</span><strong>118k€</strong>
+          </div>
+          <div class="mini-panel kpi">
+            <span class="mono">Start < 10T</span><strong style="color:var(--flag)">2</strong>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Titel</th>
+              <th>Status</th>
+              <th>Risiko</th>
+              <th>Wert</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>ÄM‑014</td>
+              <td>RWA-Anforderung Atrium</td>
+              <td>${chip("Prüfung", "blue")}</td>
+              <td>Komplettheit</td>
+              <td>45.000 € ca.</td>
+            </tr>
+            <tr class="highlight" tabindex="0" data-next>
+              <td>${SCENARIO.claimId}</td>
+              <td><strong>${SCENARIO.title}</strong></td>
+              <td>${chip("Bausoll offen", "flag")}</td>
+              <td>${chip("F0 ↔ F90", "flag")}</td>
+              <td>${SCENARIO.pricing.total}</td>
+            </tr>
+            <tr>
+              <td>ÄM‑018</td>
+              <td>Fensterflügel Anteil erhöht</td>
+              <td>${chip("Entwurf")}</td>
+              <td>Massenmehrung</td>
+              <td>21.700 € ca.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <aside class="panel">
+        <div class="kicker">Eingang aus Planprüfung</div>
+        <h3>${SCENARIO.claimId}</h3>
+        <p>${SCENARIO.note}</p>
+        ${chip(SCENARIO.metadata[1], "blue")}
+        ${chip(SCENARIO.bauist.depth, "flag")}
+        ${chip("Ausführung in 9 Tagen", "flag")}<br /><br />${button(
+          "ÄM‑017 öffnen",
+        )}
+      </aside>
+    </div>`,
+    "app.nachweis.bau/aenderungsmitteilungen",
+  );
+}
+
+function deviationHero() {
+  return browser(
+    html`<div class="panel">
+      <h2>Bausoll ↔ neue Plananforderung</h2>
+      <div class="compare">
+        <div class="mini-panel">
+          <h3>Bausoll</h3>
+          <div class="spec-list">
+            <div class="spec-line">
+              <span>Basis</span><strong>${SCENARIO.bausoll.lv}</strong>
+            </div>
+            <div class="spec-line">
+              <span>geschuldet</span
+              ><strong>${SCENARIO.bausoll.description}</strong>
+            </div>
+            <div class="spec-line">
+              <span>Umfang</span><strong>${SCENARIO.bausoll.quantity}</strong>
+            </div>
+            <div class="spec-line">
+              <span>Vertrag</span><strong>${SCENARIO.bausoll.contract}</strong>
+            </div>
+          </div>
+        </div>
+        <div class="vs"><span>ABW.</span></div>
+        <div class="mini-panel">
+          <h3>Neue Revision</h3>
+          <div class="spec-list">
+            <div class="spec-line">
+              <span>Anforderung</span><strong>${SCENARIO.bauist.description}</strong>
+            </div>
+            <div class="spec-line">
+              <span>Ort</span><strong>${SCENARIO.bauist.depth}</strong>
+            </div>
+            <div class="spec-line">
+              <span>Mehrleistung</span
+              ><strong>${SCENARIO.bauist.extraQuantity}</strong>
+            </div>
+            <div class="spec-line">
+              <span>Prüfung</span><strong>${SCENARIO.bauist.method}</strong>
+            </div>
+          </div>
+        </div>
+        <aside class="mini-panel">
+          <h3>Risk Check · Komplettheit</h3>
+          <div class="checklist">
+            ${SCENARIO.riskFlags
+              .map(
+                (r) =>
+                  `<div class="check open"><span>${r}</span><b>!</b></div>`,
+              )
+              .join("")}
+          </div>
+          <p class="mono" style="margin:14px 0 5px">Bausoll-Prüfung ${claimCompleteness()} %</p>
+          <div class="meter"><span></span></div>
+        </aside>
+      </div>
+      <br />${button("Unterlagen prüfen")}
+    </div>`,
+    "app.nachweis.bau/aenderungsmitteilungen",
   );
 }
 
 function evidenceGraph() {
   const cards = SCENARIO.demoWorkflow.evidenceCards;
-  const groundCards = cards.filter((c) => c.supports === "dem Grunde nach");
-  const heightCards = cards.filter((c) => c.supports === "der Höhe nach");
   const resolved = state.groundResolved;
   const pct = claimCompleteness();
 
   function renderCard(c) {
-    let noteHtml = "";
-    if (c.note) {
-      noteHtml = resolved
-        ? `<p class="mono" style="color:var(--ok);font-size:11px;margin:6px 0 0">✓ Gegenzeichnung angefordert</p>`
-        : `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`;
-    }
-    return `<div class="mini-panel">
+    const open = c.id === "D04" && !resolved;
+    return `<div class="mini-panel ${open ? "is-open-doc" : ""}">
       <div class="metadata-grid" style="margin-bottom:6px">
-        ${chip(c.id, "blue")} ${chip(c.type, "")}
+        ${chip(c.id, "blue")} ${chip(c.type)}
       </div>
       <strong>${c.title}</strong>
       <p class="mono" style="color:var(--muted);font-size:12px;margin:4px 0 0">${c.role}</p>
-      ${noteHtml}
+      ${open
+        ? `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`
+        : `<p class="mono" style="color:var(--ok);font-size:11px;margin:6px 0 0">✓ geprüft</p>`}
     </div>`;
   }
 
   return browser(
     html`<div class="panel">
-      <h2>Nachweisstruktur · ${SCENARIO.claimId}</h2>
-      <p>Das Baustellenereignis wurde klassifiziert und die Nachweise den Prüfkategorien zugeordnet.</p>
-      <div class="resolve-layout">
-        <div>
-          <h3 style="margin-bottom:12px">${chip("dem Grunde nach", "blue")} Anspruchsbegründung</h3>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            ${groundCards.map(renderCard).join("")}
-          </div>
-        </div>
-        <div>
-          <h3 style="margin-bottom:12px">${chip("der Höhe nach", "ok")} Preisnachweis</h3>
-          <div style="display:flex;flex-direction:column;gap:8px">
-            ${heightCards.map(renderCard).join("")}
-          </div>
-        </div>
+      <h2>Bausoll-Nachweis · ${SCENARIO.claimId}</h2>
+      <p>Die Änderungsmitteilung wird nicht aus Baustellenfotos gebaut, sondern aus dem prüfbaren Abgleich aller relevanten Plan- und Vertragsunterlagen.</p>
+      <div class="doc-matrix">
+        ${cards.map(renderCard).join("")}
       </div>
-      <p class="mono" style="margin:18px 0 5px">Vollständigkeit ${pct} %</p>
+      <p class="mono" style="margin:18px 0 5px">Bausoll-Prüfung ${pct} %</p>
       <div class="meter" style="--value:${pct}%"><span></span></div>
       <br /><button
         class="btn ${resolved ? "ok" : ""}"
         type="button"
         data-resolve-ground
       >
-        ${resolved
-          ? "AG-Gegenzeichnung angefordert"
-          : "Fehlende Gegenzeichnung anfordern"}
+        ${resolved ? "Bauphysik geprüft" : "Bauphysik prüfen"}
       </button>
       ${button("Weiter →")}
     </div>`,
+    "app.nachweis.bau/aenderungsmitteilungen",
   );
 }
 
@@ -707,15 +779,13 @@ function pricingEvidenceMap() {
   const rows = SCENARIO.demoWorkflow.pricingRows;
   const resolved = state.heightResolved;
   const pct = claimCompleteness();
-  // The red lump-sum row (P05) is the gap that "Fehlende Nachweise ergänzen" closes.
-  const isFixed = (r) => r.id === "P05" && resolved;
+  const isFixed = (r) => r.id === "C03" && resolved;
 
   const sel =
     rows.find((r) => r.id === state.selectedPricingRowId) ||
     rows.find((r) => r.risk === "red") ||
     rows[0];
   const selFixed = isFixed(sel);
-
   const borderColor = selFixed
     ? "var(--ok)"
     : sel.risk === "red"
@@ -741,18 +811,11 @@ function pricingEvidenceMap() {
     })
     .join("");
 
-  const selEvidenceChips = selFixed
-    ? chip("Aufgeschlüsselt", "ok")
-    : sel.evidence.length
-      ? sel.evidence.map((e) => chip(e, "blue")).join(" ")
-      : chip("Kein Nachweis", "flag");
-
   const riskChip = selFixed
-    ? chip("Belegt", "ok")
+    ? chip("geklärt", "ok")
     : sel.risk === "red"
-      ? chip("Kritisch", "flag")
-      : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">Offen</span>`;
-
+      ? chip("Komplettheitsrisiko", "flag")
+      : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">offen</span>`;
   const detailBody = selFixed
     ? `<p style="margin:0;color:var(--ok);font-size:13px">✓ ${sel.missingProof}</p>`
     : `<p style="font-size:13px;margin:0 0 12px;color:var(--muted)">${sel.weakness}</p>
@@ -760,7 +823,7 @@ function pricingEvidenceMap() {
 
   return browser(
     html`<div class="panel">
-      <h2>Kostennachweis · ${SCENARIO.claimId}</h2>
+      <h2>Änderungsmitteilung vorbereiten · ${SCENARIO.claimId}</h2>
       <div class="resolve-layout">
         <div style="display:flex;flex-direction:column;gap:4px">
           ${costLines}
@@ -770,156 +833,25 @@ function pricingEvidenceMap() {
             <strong>${sel.id} · ${sel.description}</strong>
             ${riskChip}
           </div>
-          <div style="margin-bottom:10px">${selEvidenceChips}</div>
+          <div style="margin-bottom:10px">${sel.evidence.map((e) => chip(e, "blue")).join(" ")}</div>
           ${detailBody}
         </div>
       </div>
-      <p class="mono" style="margin:18px 0 5px">Vollständigkeit ${pct} %</p>
+      <p class="mono" style="margin:18px 0 5px">Entscheidungsvorlage ${pct} %</p>
       <div class="meter" style="--value:${pct}%"><span></span></div>
       <br /><button
         class="btn ${resolved ? "ok" : ""}"
         type="button"
         data-resolve-height
       >
-        ${resolved ? "Nachweise vollständig" : "Fehlende Nachweise ergänzen"}
+        ${resolved ? "Risikoargument ergänzt" : "Komplettheitsargument ergänzen"}
       </button>
       <div class="sum" style="margin-top:14px">
-        Urkalkulation fortgeschrieben · Nachtragssumme ≈ ${SCENARIO.pricing.total}
+        ${SCENARIO.pricing.basis} · ${SCENARIO.pricing.total}
       </div>
       <br />${button("Weiter →")}
     </div>`,
-  );
-}
-
-// <!-- ============ SILO 2: KAUFMÄNNISCH (screens 5–8) ============ -->
-function browser(content, url = "app.nachweis.bau/nachtraege", laptop = false) {
-  return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(14,26,36,.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
-}
-
-function commercialDashboard() {
-  return browser(
-    html`<div class="dashboard-grid">
-      <div class="panel">
-        <div class="kicker">Nachtrag-Dashboard</div>
-        <h2>Offene Nachträge</h2>
-        <div class="kpis">
-          <div class="mini-panel kpi">
-            <span class="mono">offen</span><strong>7</strong>
-          </div>
-          <div class="mini-panel kpi">
-            <span class="mono">Volumen</span><strong>142k€</strong>
-          </div>
-          <div class="mini-panel kpi">
-            <span class="mono">Fristen</span
-            ><strong style="color:var(--flag)">3</strong>
-          </div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Titel</th>
-              <th>Status</th>
-              <th>Frist</th>
-              <th>Wert</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>N‑201</td>
-              <td>Mehrstahl Decke C</td>
-              <td>${chip("Prüfung", "blue")}</td>
-              <td>8 Tage</td>
-              <td>11.900 €</td>
-            </tr>
-            <tr class="highlight" tabindex="0" data-next>
-              <td>${SCENARIO.claimId}</td>
-              <td><strong>${SCENARIO.title}</strong></td>
-              <td>${chip("Neu", "flag")}</td>
-              <td>${chip("4 Tage", "flag")}</td>
-              <td>${SCENARIO.pricing.total}</td>
-            </tr>
-            <tr>
-              <td>N‑205</td>
-              <td>Provisorische Entwässerung</td>
-              <td>${chip("Entwurf")}</td>
-              <td>12 Tage</td>
-              <td>6.400 €</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <aside class="panel">
-        <div class="kicker">Eingang von Baustelle</div>
-        <h3>${SCENARIO.eventId}</h3>
-        <p>${SCENARIO.note}</p>
-        ${chip(SCENARIO.metadata[1], "blue")}
-        ${chip(SCENARIO.bauist.depth, "flag")}<br /><br />${button(
-          "N‑204 öffnen",
-        )}
-      </aside>
-    </div>`,
-  );
-}
-
-function deviationHero() {
-  return browser(
-    html`<div class="panel">
-      <h2>Bausoll ↔ Bau-Ist</h2>
-      <div class="compare">
-        <div class="mini-panel">
-          <h3>Bausoll</h3>
-          <div class="spec-list">
-            <div class="spec-line">
-              <span>LV</span><strong>${SCENARIO.bausoll.lv}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Leistung</span
-              ><strong>${SCENARIO.bausoll.description}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Menge</span><strong>${SCENARIO.bausoll.quantity}</strong>
-            </div>
-            <div class="spec-line">
-              <span>EP</span><strong>${SCENARIO.bausoll.unitPrice}</strong>
-            </div>
-          </div>
-        </div>
-        <div class="vs"><span>ABW.</span></div>
-        <div class="mini-panel">
-          <h3>Bau-Ist</h3>
-          <div class="spec-list">
-            <div class="spec-line">
-              <span>Befund</span><strong>${SCENARIO.bauist.description}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Tiefe</span><strong>${SCENARIO.bauist.depth}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Mehrmenge</span
-              ><strong>${SCENARIO.bauist.extraQuantity}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Verfahren</span><strong>${SCENARIO.bauist.method}</strong>
-            </div>
-          </div>
-        </div>
-        <aside class="mini-panel">
-          <h3>Risk Check · ${SCENARIO.eventId}</h3>
-          <div class="checklist">
-            ${SCENARIO.riskFlags
-              .map(
-                (r) =>
-                  `<div class="check open"><span>${r}</span><b>!</b></div>`,
-              )
-              .join("")}
-          </div>
-          <p class="mono" style="margin:14px 0 5px">Vollständigkeit 68 %</p>
-          <div class="meter"><span></span></div>
-        </aside>
-      </div>
-      <br />${button("Nachweise prüfen")}
-    </div>`,
+    "app.nachweis.bau/aenderungsmitteilungen",
   );
 }
 
@@ -929,34 +861,36 @@ function commercialConfirm() {
       class="panel"
       style="text-align:center;max-width:720px;margin:70px auto"
     >
-      <div class="kicker">Übergabe</div>
-      <h2>Nachtragsakte ${SCENARIO.claimId} — 95 % bereit</h2>
+      <div class="kicker">Entscheidungsvorlage</div>
+      <h2>Änderungsmitteilung ${SCENARIO.claimId} — 95 % bereit</h2>
       <p>
-        Abweichung, Nachweise, Mengen und Urkalkulationsbezug sind strukturiert.
-        Die Akte geht jetzt an Recht zur rechtlichen Freigabe.
+        Bausoll-Abgleich, Komplettheitsrisiko, ca.-Kosten und Terminwirkung sind
+        strukturiert. Die Vorlage geht jetzt an die Projektfreigabe, bevor die
+        Leistung ausgeführt wird.
       </p>
       <div class="metadata-grid" style="justify-content:center">
-        ${chip("Bausoll/Bau-Ist geklärt", "ok")} ${chip("Frist gewahrt", "ok")}
+        ${chip("Bausoll geprüft", "ok")} ${chip("vor Ausführung", "ok")}
         ${chip(SCENARIO.pricing.total, "ok")}
       </div>
-      ${button("An Recht übergeben")}
+      ${button("Zur Freigabe übergeben")}
     </div>`,
+    "app.nachweis.bau/aenderungsmitteilungen",
   );
 }
 
-// <!-- ============ SILO 3: RECHT (screens 9–11) ============ -->
+// <!-- ============ SILO 3: FREIGABE ============ -->
 function legalQueue() {
   return browser(
     html`<div class="panel">
-      <div class="kicker">Freigabe-Queue</div>
-      <h2>1 Nachtragsakte zur Freigabe</h2>
+      <div class="kicker">Projektfreigabe</div>
+      <h2>1 Änderungsmitteilung zur Entscheidung</h2>
       <div class="queue-item" tabindex="0" data-next>
         <div>
           <h3>${SCENARIO.claimId} · ${SCENARIO.title}</h3>
           <p>${SCENARIO.project} · 95 % bereit · ${SCENARIO.pricing.total}</p>
           <div class="metadata-grid">
-            ${chip("Frist gewahrt", "ok")}
-            ${chip("1 offener Prüfpunkt", "flag")} ${chip("§ 2 VOB/B", "blue")}
+            ${chip("vor Ausführung", "ok")}
+            ${chip("Komplettheitsklausel", "flag")} ${chip("AG-Grundsatzentscheidung", "blue")}
           </div>
         </div>
         <button class="btn" type="button" data-next>Öffnen</button>
@@ -974,8 +908,8 @@ function legalReview() {
   );
   return browser(
     html`<div class="panel">
-      <div class="kicker">Rechtliche Prüfung</div>
-      <h2>Belastbarkeit prüfen</h2>
+      <div class="kicker">Freigabeprüfung</div>
+      <h2>Ist das eine echte Änderung oder geschuldete Komplettheit?</h2>
       <div class="resolve-layout">
         <div>
           <div class="checklist">
@@ -1000,11 +934,12 @@ function legalReview() {
           </button>
         </div>
         <aside class="mini-panel">
-          <h3>Begründungsentwurf</h3>
+          <h3>Begründung für Änderungsmitteilung</h3>
           <p>
-            Die angetroffene Bodenklasse ${SCENARIO.bauist.description} weicht
-            vom vertraglich geschuldeten ${SCENARIO.bausoll.description} ab. Die
-            geänderte Leistung wurde angeordnet und fristgerecht angekündigt.
+            Die neue Anforderung ${SCENARIO.bauist.description} weicht vom
+            dokumentierten Bausoll (${SCENARIO.bausoll.description}) ab. Die
+            Änderung wurde erst mit Rev. 08 konkretisiert und soll vor
+            Ausführungsbeginn entschieden werden.
           </p>
           <div class="metadata-grid">
             ${chip(SCENARIO.bauist.order, resolved ? "ok" : "flag")}
@@ -1013,7 +948,7 @@ function legalReview() {
         </aside>
       </div>
       <br />${button(
-        "Als belastbar bestätigen & freigeben",
+        "Zur AG-Grundsatzentscheidung freigeben",
         resolved ? "data-next" : "data-resolve-legal",
       )}
     </div>`,
@@ -1027,19 +962,19 @@ function signoffExport() {
     html`<div class="doc-preview">
       <aside class="panel">
         <div class="kicker">Status</div>
-        <h2 style="color:var(--ok)">Belastbar – freigegeben</h2>
-        <p>Die prüffähige Nachtragsakte ist bereit für Export und Versand.</p>
+        <h2 style="color:var(--ok)">Änderungsmitteilung freigegeben</h2>
+        <p>Die Entscheidungsvorlage ist bereit für Export und AG-Abstimmung.</p>
         <div class="metadata-grid">
           ${chip(SCENARIO.claimId, "blue")}
-          ${chip(SCENARIO.pricing.total, "ok")} ${chip("Legal sign-off", "ok")}
+          ${chip(SCENARIO.pricing.total, "ok")} ${chip("vor Ausführung", "ok")}
         </div>
         <button class="btn ok" type="button" data-export>
-          Nachtragsakte exportieren (PDF)</button
+          Änderungsmitteilung exportieren (PDF)</button
         ><br /><br />${button("Neu starten", "data-restart")}
       </aside>
       <div class="document">
         <div class="kicker">Dokumentvorschau</div>
-        <h3>Prüffähige Nachtragsakte · ${SCENARIO.claimId}</h3>
+        <h3>Änderungsmitteilung · ${SCENARIO.claimId}</h3>
         <p><strong>${SCENARIO.title}</strong><br />${SCENARIO.project}</p>
         <table>
           <tbody>
@@ -1050,7 +985,7 @@ function signoffExport() {
               )
               .join("")}
             <tr>
-              <td>Nachtragssumme</td>
+              <td>ca.-Kosten</td>
               <td><strong>${SCENARIO.pricing.total}</strong></td>
             </tr>
           </tbody>
