@@ -356,7 +356,7 @@ function exportPdf() {
 
 // <!-- ============ SHARED DESKTOP FRAME ============ -->
 function browser(content, url = "app.nubo.bau/nachtraege", laptop = false) {
-  return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(14,26,36,.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
+  return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(var(--ink-rgb),.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
 }
 
 function planInbox() {
@@ -581,7 +581,7 @@ function pricingEvidenceMap() {
     ? "var(--ok)"
     : sel.risk === "red"
       ? "var(--flag)"
-      : "#ffc83c";
+      : "var(--flag-bright)";
 
   const costLines = rows
     .map((r) => {
@@ -590,10 +590,10 @@ function pricingEvidenceMap() {
         ? "var(--ok)"
         : r.risk === "red"
           ? "var(--flag)"
-          : "#ffc83c";
+          : "var(--flag-bright)";
       return `<div
           data-pricing-row="${r.id}"
-          style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;${isSelected ? "background:rgba(130,199,255,.1);outline:1px solid rgba(130,199,255,.4);" : ""}">
+          style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;${isSelected ? "background:rgba(var(--ring-rgb),.1);outline:1px solid rgba(var(--ring-rgb),.4);" : ""}">
         <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0"></span>
         ${chip(r.id, "blue")}
         <span style="flex:1;font-size:13px">${r.description}</span>
@@ -606,7 +606,7 @@ function pricingEvidenceMap() {
     ? chip("geklärt", "ok")
     : sel.risk === "red"
       ? chip("Komplettheitsrisiko", "flag")
-      : `<span class="chip" style="background:rgba(255,200,60,.15);color:#ffc83c">offen</span>`;
+      : `<span class="chip" style="background:rgba(var(--flag-bright-rgb),.15);color:var(--flag-bright)">offen</span>`;
   const detailBody = selFixed
     ? `<p style="margin:0;color:var(--ok);font-size:13px">✓ ${sel.missingProof}</p>`
     : `<p style="font-size:13px;margin:0 0 12px;color:var(--muted)">${sel.weakness}</p>
