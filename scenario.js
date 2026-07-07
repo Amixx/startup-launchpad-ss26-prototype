@@ -10,18 +10,21 @@ const SCENARIO = {
       label: "Planprüfung",
       persona: "Projektleiter",
       device: "Desktop",
+      phase: "① Abweichung erkennen",
     },
     {
       id: "commercial",
       label: "Änderungsmitteilung",
       persona: "Projektteam / Kalkulation",
       device: "Desktop",
+      phase: "② Nachweise & Preis",
     },
     {
       id: "legal",
       label: "Freigabe",
       persona: "Gesamtprojektleiter",
       device: "Laptop",
+      phase: "③ Belastbarer Nachtrag",
     },
   ],
   project: "Neubau Laborgebäude · LP3-Vertragsbasis",
@@ -145,6 +148,21 @@ const I18N = {
       toast: "Change-order file exported as PDF",
     },
     replace: {
+      "① Abweichung erkennen": "① Detect the deviation",
+      "② Nachweise & Preis": "② Evidence & pricing",
+      "③ Belastbarer Nachtrag": "③ Defensible change order",
+      "Aus Planänderung wird Nachtrag": "From plan change to change order",
+      "Drei Schritte zum belastbaren Nachtrag":
+        "Three steps to a defensible change order",
+      "① Abweichung erkennen — Bausoll ↔ neue Revision":
+        "① Detect the deviation — contracted scope ↔ new revision",
+      "② Nachweise & Preis belegen": "② Prove evidence & pricing",
+      "③ Belastbaren Nachtrag freigeben":
+        "③ Approve the defensible change order",
+      Planprüfung: "Plan review",
+      Kalkulation: "Costing",
+      "Nachträge sind 8–15 % der Auftragssumme. Bei einem 50-Mio.-€-Projekt stehen 4–7 Mio. € im Feuer — verloren, wenn die Planänderung nicht zum belastbaren Nachtrag wird.":
+        "Change orders are 8–15% of contract value. On a €50M project, €4–7M is at stake — lost if the plan change never becomes a defensible change order.",
       "Baufeld B": "Building Site B",
       "Erdarbeiten, UK −2,40 m": "Excavation, UK −2.40 m",
       "Achse A3–A7": "Axis A3–A7",

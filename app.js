@@ -167,7 +167,7 @@ function renderShell() {
     SCENARIO.roles
       .map(
         (role) => `<div class="rail__node" data-rail="${role.id}">
-        <span class="rail__kicker">${role.device}</span>
+        <span class="rail__kicker">${role.phase}</span>
         <span class="rail__name">${role.label}</span>
         <span class="rail__meta">${role.persona}</span>
       </div>`,
@@ -462,12 +462,17 @@ function planInbox() {
         </table>
       </div>
       <aside class="panel">
-        <div class="kicker">Workflow-Hinweis</div>
-        <h3>Planänderung vor Baustelle</h3>
-        <p>
-          Viele SF-Bau-Nachträge entstehen nicht erst auf der Baustelle, sondern
-          wenn neue Pläne und Berichte eintreffen und gegen das Bausoll geprüft
-          werden müssen.
+        <div class="kicker">Aus Planänderung wird Nachtrag</div>
+        <h3>Drei Schritte zum belastbaren Nachtrag</h3>
+        <div class="checklist">
+          <div class="check"><span>① Abweichung erkennen — Bausoll ↔ neue Revision</span><b>Planprüfung</b></div>
+          <div class="check"><span>② Nachweise & Preis belegen</span><b>Kalkulation</b></div>
+          <div class="check"><span>③ Belastbaren Nachtrag freigeben</span><b>Freigabe</b></div>
+        </div>
+        <p style="margin-top:14px">
+          Nachträge sind 8–15 % der Auftragssumme. Bei einem 50-Mio.-€-Projekt
+          stehen 4–7 Mio. € im Feuer — verloren, wenn die Planänderung nicht
+          zum belastbaren Nachtrag wird.
         </p>
         ${chip("Bausoll = das A und O", "blue")}
         ${chip("Komplettheitsklausel", "flag")}<br /><br />${button(
