@@ -6,7 +6,7 @@
     { id: "aktenzeichen", name: "Aktenzeichen", swatch: "#9a6b1f", note: "Ink + brass — legal authority, premium, evidence." },
     { id: "vermessung", name: "Vermessung", swatch: "#0c7c8c", note: "Surveyor teal — calm, technical alternative to blue." },
   ];
-  var KEY = "nachweis-theme";
+  var KEY = "nubo-theme";
 
   function apply(id) {
     if (id) document.documentElement.setAttribute("data-theme", id);

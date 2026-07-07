@@ -1,18 +1,18 @@
 /* ============ DESIGN TOKENS (CSS vars) ============ */
 :root {
-  --bg: #f8fafc;
-  --bg-2: #f1f5f9;
-  --surface: #f3f5f7;
-  --paper: #fffdf6;
-  --ink: #0e1a24;
-  --muted: #5b6a76;
+  --bg: #f6f7f8;
+  --bg-2: #eef0f2;
+  --surface: #ffffff;
+  --paper: #f6f7f8;
+  --ink: #15181c;
+  --muted: #616a74;
   --line: rgba(var(--ink-rgb), 0.12);
   --line-strong: rgba(var(--ink-rgb), 0.22);
-  --accent: #1f6feb;
-  --accent-rgb: 31, 111, 235;
-  --accent-dark: #0d4bb3;
-  --accent-bright: #2d7df8;
-  --ring: #82c7ff;
+  --accent: #2f6bff;
+  --accent-rgb: 47, 107, 255;
+  --accent-dark: #1d4fcc;
+  --accent-bright: #4b82ff;
+  --ring: #a9c4ff;
   --grid: rgba(var(--ink-rgb), 0.08);
   --grid-strong: rgba(var(--ink-rgb), 0.12);
   --flag: #e0a100;
@@ -20,11 +20,11 @@
   --alert: #c8392b;
 
   /* Channel vars for translucent tints (rgba(var(--x-rgb), a)) */
-  --ink-rgb: 14, 26, 36;
+  --ink-rgb: 21, 24, 28;
   --white: #fff;
   --white-rgb: 255, 255, 255;
   --black-rgb: 0, 0, 0;
-  --surface-2: #eef2f6;
+  --surface-2: #eef0f2;
 
   /* Status derivations (constant across brand themes) */
   --ok-rgb: 31, 169, 113;
@@ -52,7 +52,7 @@
     "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", monospace;
   --sans:
-    "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --radius: 4px;
 
   /* Type scale — 6 pinned steps (collapsed from 20 ad-hoc sizes) */

@@ -2,7 +2,7 @@
 // Plan-driven Schlüsselfertigbau change recognition.
 const SCENARIO = {
   product: {
-    name: "Nachweis",
+    name: "Nubo",
   },
   roles: [
     {
@@ -186,8 +186,8 @@ const I18N = {
       "Planpaket wird strukturiert…": "Structuring plan package…",
       "Revision, Berichte und Bausoll werden abgeglichen":
         "Revision, reports and contracted scope are compared",
-      "Nachweis ordnet die Änderung automatisch den Vertragsunterlagen zu.":
-        "Nachweis maps the change to the contract documents automatically.",
+      "Nubo ordnet die Änderung automatisch den Vertragsunterlagen zu.":
+        "Nubo maps the change to the contract documents automatically.",
       "KI-Vorprüfung": "AI pre-check",
       "Mögliche geänderte Leistung erkannt": "Possible changed service detected",
       "Planrevision fordert höherwertige Brandschutzwand":
@@ -589,8 +589,8 @@ const I18N = {
       "Urkalkulation fortgeschrieben": "Original costing extended",
       "Neu starten": "Start over",
       "AUTO: GPS · ZEIT · TIEFE": "AUTO: GPS · TIME · DEPTH",
-      "app.nachweis.bau/nachtraege": "app.nachweis.bau/change-orders",
-      "app.nachweis.bau/freigabe": "app.nachweis.bau/approval",
+      "app.nubo.bau/nachtraege": "app.nubo.bau/change-orders",
+      "app.nubo.bau/freigabe": "app.nubo.bau/approval",
       SHOT: "SHOT",
       FOTO: "PHOTO",
     },

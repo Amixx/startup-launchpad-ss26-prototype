@@ -355,7 +355,7 @@ function exportPdf() {
 }
 
 // <!-- ============ SHARED DESKTOP FRAME ============ -->
-function browser(content, url = "app.nachweis.bau/nachtraege", laptop = false) {
+function browser(content, url = "app.nubo.bau/nachtraege", laptop = false) {
   return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(14,26,36,.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
 }
 
@@ -422,7 +422,7 @@ function planInbox() {
         )}
       </aside>
     </div>`,
-    "app.nachweis.bau/planpruefung",
+    "app.nubo.bau/planpruefung",
   );
 }
 
@@ -454,7 +454,7 @@ function revisionCloudReview() {
       </div>
       <br />${button("Bausoll-Abgleich starten")}
     </div>`,
-    "app.nachweis.bau/planpruefung",
+    "app.nubo.bau/planpruefung",
   );
 }
 
@@ -465,10 +465,10 @@ function aiProcessing() {
       <div>
         <div class="kicker">Planpaket wird strukturiert…</div>
         <h2>Revision, Berichte und Bausoll werden abgeglichen</h2>
-        <p>Nachweis ordnet die Änderung automatisch den Vertragsunterlagen zu.</p>
+        <p>Nubo ordnet die Änderung automatisch den Vertragsunterlagen zu.</p>
       </div>
     </div>`,
-    "app.nachweis.bau/planpruefung",
+    "app.nubo.bau/planpruefung",
   );
 }
 
@@ -519,7 +519,7 @@ function planClassification() {
       </div>
       <br />${button("An Projektteam übergeben")}
     </div>`,
-    "app.nachweis.bau/planpruefung",
+    "app.nubo.bau/planpruefung",
   );
 }
 
@@ -562,7 +562,7 @@ function evidenceGraph() {
       </button>
       ${button("Weiter →")}
     </div>`,
-    "app.nachweis.bau/aenderungsmitteilungen",
+    "app.nubo.bau/aenderungsmitteilungen",
   );
 }
 
@@ -642,7 +642,7 @@ function pricingEvidenceMap() {
       </div>
       <br />${button("Zur Freigabe übergeben")}
     </div>`,
-    "app.nachweis.bau/aenderungsmitteilungen",
+    "app.nubo.bau/aenderungsmitteilungen",
   );
 }
 
@@ -682,7 +682,7 @@ function signoffExport() {
         </table>
       </div>
     </div>`,
-    "app.nachweis.bau/freigabe",
+    "app.nubo.bau/freigabe",
     true,
   );
 }
