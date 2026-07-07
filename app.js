@@ -17,25 +17,9 @@ const screens = [
   { id: "s2", silo: "site", number: "02", render: revisionCloudReview },
   { id: "s3", silo: "site", number: "02b", render: aiProcessing },
   { id: "s4", silo: "site", number: "03", render: planClassification },
-  { id: "s5", silo: "site", number: "04", render: bausollMatrix },
-  {
-    id: "s7",
-    silo: "commercial",
-    number: "05",
-    render: commercialDashboard,
-  },
-  { id: "s8", silo: "commercial", number: "06", render: deviationHero },
-  { id: "s8b", silo: "commercial", number: "07", render: evidenceGraph },
-  { id: "s8c", silo: "commercial", number: "08", render: pricingEvidenceMap },
-  {
-    id: "s10",
-    silo: "commercial",
-    number: "09",
-    render: commercialConfirm,
-  },
-  { id: "s11", silo: "legal", number: "10", render: legalQueue },
-  { id: "s12", silo: "legal", number: "11", render: legalReview },
-  { id: "s13", silo: "legal", number: "12", render: signoffExport },
+  { id: "s8b", silo: "commercial", number: "04", render: evidenceGraph },
+  { id: "s8c", silo: "commercial", number: "05", render: pricingEvidenceMap },
+  { id: "s13", silo: "legal", number: "06", render: signoffExport },
 ];
 
 const stage = document.querySelector("#stage");
@@ -167,7 +151,7 @@ function renderShell() {
     SCENARIO.roles
       .map(
         (role) => `<div class="rail__node" data-rail="${role.id}">
-        <span class="rail__kicker">${role.phase}</span>
+        <span class="rail__kicker">${role.device}</span>
         <span class="rail__name">${role.label}</span>
         <span class="rail__meta">${role.persona}</span>
       </div>`,
@@ -263,35 +247,6 @@ function render() {
       next();
     }, 1500);
   }
-
-  if (screen.id === "s2") {
-    const el = document.getElementById("live-transcript-text");
-    if (el) {
-      const fullText = translateText(SCENARIO.voiceTranscript);
-      const words = fullText.split(" ");
-      let currentWordIndex = 0;
-      el.textContent = "";
-      el.classList.add("live-cursor");
-
-      state.transcriptInterval = setInterval(() => {
-        if (currentWordIndex < words.length) {
-          el.textContent += (currentWordIndex === 0 ? "" : " ") + words[currentWordIndex];
-          currentWordIndex++;
-          const box = el.closest(".voice-transcript");
-          if (box) {
-            box.scrollTop = box.scrollHeight;
-          }
-        } else {
-          el.classList.remove("live-cursor");
-          el.closest(".voice-record-container")
-            ?.querySelector(".mic-container")
-            ?.classList.add("is-finished");
-          clearInterval(state.transcriptInterval);
-          state.transcriptInterval = null;
-        }
-      }, 100);
-    }
-  }
 }
 
 function baseSilo(silo) {
@@ -337,10 +292,6 @@ function next() {
     state.heightResolved = true;
     return render();
   }
-  if (screens[state.current].id === "s12" && !state.legalResolved) {
-    state.legalResolved = true;
-    return render();
-  }
   if (state.current === screens.length - 1) return restart();
   state.current += 1;
   render();
@@ -354,10 +305,6 @@ function prev() {
   }
   if (screens[state.current].id === "s8b" && state.groundResolved) {
     state.groundResolved = false;
-    return render();
-  }
-  if (screens[state.current].id === "s12" && state.legalResolved) {
-    state.legalResolved = false;
     return render();
   }
   if (state.current === 0) return;
@@ -462,17 +409,12 @@ function planInbox() {
         </table>
       </div>
       <aside class="panel">
-        <div class="kicker">Aus Planänderung wird Nachtrag</div>
-        <h3>Drei Schritte zum belastbaren Nachtrag</h3>
-        <div class="checklist">
-          <div class="check"><span>① Abweichung erkennen — Bausoll ↔ neue Revision</span><b>Planprüfung</b></div>
-          <div class="check"><span>② Nachweise & Preis belegen</span><b>Kalkulation</b></div>
-          <div class="check"><span>③ Belastbaren Nachtrag freigeben</span><b>Freigabe</b></div>
-        </div>
-        <p style="margin-top:14px">
-          Nachträge sind 8–15 % der Auftragssumme. Bei einem 50-Mio.-€-Projekt
-          stehen 4–7 Mio. € im Feuer — verloren, wenn die Planänderung nicht
-          zum belastbaren Nachtrag wird.
+        <div class="kicker">Workflow-Hinweis</div>
+        <h3>Planänderung vor Baustelle</h3>
+        <p>
+          Viele SF-Bau-Nachträge entstehen nicht erst auf der Baustelle, sondern
+          wenn neue Pläne und Berichte eintreffen und gegen das Bausoll geprüft
+          werden müssen.
         </p>
         ${chip("Bausoll = das A und O", "blue")}
         ${chip("Komplettheitsklausel", "flag")}<br /><br />${button(
@@ -521,9 +463,9 @@ function aiProcessing() {
     html`<div class="panel processing-panel">
       <div class="spinner-ring"></div>
       <div>
-        <div class="kicker">Planpaket wird strukturiert...</div>
-        <h2>Revisionswolken, Berichte und Bausoll werden abgeglichen</h2>
-        <p>Nachweis ordnet die Änderung den Vertragsunterlagen zu und markiert, welche Dokumente noch geprüft werden müssen.</p>
+        <div class="kicker">Planpaket wird strukturiert…</div>
+        <h2>Revision, Berichte und Bausoll werden abgeglichen</h2>
+        <p>Nachweis ordnet die Änderung automatisch den Vertragsunterlagen zu.</p>
       </div>
     </div>`,
     "app.nachweis.bau/planpruefung",
@@ -575,33 +517,6 @@ function planClassification() {
           </div>
         </div>
       </div>
-      <br />${button("Bausoll-Matrix öffnen")}
-    </div>`,
-    "app.nachweis.bau/planpruefung",
-  );
-}
-
-function bausollMatrix() {
-  const pct = claimCompleteness();
-  return browser(
-    html`<div class="panel">
-      <div class="kicker">Bausoll-Matrix</div>
-      <h2>Welche Unterlagen wurden schon geprüft?</h2>
-      <div class="doc-matrix">
-        ${SCENARIO.demoWorkflow.evidenceCards
-          .map((card) => {
-            const open = card.id === "D04";
-            return `<div class="mini-panel ${open ? "is-open-doc" : ""}">
-              <div class="metadata-grid">${chip(card.id, "blue")} ${chip(card.type)}</div>
-              <strong>${card.title}</strong>
-              <p>${card.role}</p>
-              ${open ? chip("offen", "flag") : chip("geprüft", "ok")}
-            </div>`;
-          })
-          .join("")}
-      </div>
-      <p class="mono" style="margin:18px 0 5px">Bausoll-Prüfung ${pct} %</p>
-      <div class="meter" style="--value:${pct}%"><span></span></div>
       <br />${button("An Projektteam übergeben")}
     </div>`,
     "app.nachweis.bau/planpruefung",
@@ -609,135 +524,6 @@ function bausollMatrix() {
 }
 
 // <!-- ============ SILO 2: ÄNDERUNGSMITTEILUNG ============ -->
-
-function commercialDashboard() {
-  return browser(
-    html`<div class="dashboard-grid">
-      <div class="panel">
-        <div class="kicker">Änderungsmitteilungen</div>
-        <h2>Planänderungen vor dem Nachtrag entscheiden</h2>
-        <div class="kpis">
-          <div class="mini-panel kpi">
-            <span class="mono">in Prüfung</span><strong>4</strong>
-          </div>
-          <div class="mini-panel kpi">
-            <span class="mono">ca.-Volumen</span><strong>118k€</strong>
-          </div>
-          <div class="mini-panel kpi">
-            <span class="mono">Start < 10T</span><strong style="color:var(--flag)">2</strong>
-          </div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Titel</th>
-              <th>Status</th>
-              <th>Risiko</th>
-              <th>Wert</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>ÄM‑014</td>
-              <td>RWA-Anforderung Atrium</td>
-              <td>${chip("Prüfung", "blue")}</td>
-              <td>Komplettheit</td>
-              <td>45.000 € ca.</td>
-            </tr>
-            <tr class="highlight" tabindex="0" data-next>
-              <td>${SCENARIO.claimId}</td>
-              <td><strong>${SCENARIO.title}</strong></td>
-              <td>${chip("Bausoll offen", "flag")}</td>
-              <td>${chip("F0 ↔ F90", "flag")}</td>
-              <td>${SCENARIO.pricing.total}</td>
-            </tr>
-            <tr>
-              <td>ÄM‑018</td>
-              <td>Fensterflügel Anteil erhöht</td>
-              <td>${chip("Entwurf")}</td>
-              <td>Massenmehrung</td>
-              <td>21.700 € ca.</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <aside class="panel">
-        <div class="kicker">Eingang aus Planprüfung</div>
-        <h3>${SCENARIO.claimId}</h3>
-        <p>${SCENARIO.note}</p>
-        ${chip(SCENARIO.metadata[1], "blue")}
-        ${chip(SCENARIO.bauist.depth, "flag")}
-        ${chip("Ausführung in 9 Tagen", "flag")}<br /><br />${button(
-          "ÄM‑017 öffnen",
-        )}
-      </aside>
-    </div>`,
-    "app.nachweis.bau/aenderungsmitteilungen",
-  );
-}
-
-function deviationHero() {
-  return browser(
-    html`<div class="panel">
-      <h2>Bausoll ↔ neue Plananforderung</h2>
-      <div class="compare">
-        <div class="mini-panel">
-          <h3>Bausoll</h3>
-          <div class="spec-list">
-            <div class="spec-line">
-              <span>Basis</span><strong>${SCENARIO.bausoll.lv}</strong>
-            </div>
-            <div class="spec-line">
-              <span>geschuldet</span
-              ><strong>${SCENARIO.bausoll.description}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Umfang</span><strong>${SCENARIO.bausoll.quantity}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Vertrag</span><strong>${SCENARIO.bausoll.contract}</strong>
-            </div>
-          </div>
-        </div>
-        <div class="vs"><span>ABW.</span></div>
-        <div class="mini-panel">
-          <h3>Neue Revision</h3>
-          <div class="spec-list">
-            <div class="spec-line">
-              <span>Anforderung</span><strong>${SCENARIO.bauist.description}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Ort</span><strong>${SCENARIO.bauist.depth}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Mehrleistung</span
-              ><strong>${SCENARIO.bauist.extraQuantity}</strong>
-            </div>
-            <div class="spec-line">
-              <span>Prüfung</span><strong>${SCENARIO.bauist.method}</strong>
-            </div>
-          </div>
-        </div>
-        <aside class="mini-panel">
-          <h3>Risk Check · Komplettheit</h3>
-          <div class="checklist">
-            ${SCENARIO.riskFlags
-              .map(
-                (r) =>
-                  `<div class="check open"><span>${r}</span><b>!</b></div>`,
-              )
-              .join("")}
-          </div>
-          <p class="mono" style="margin:14px 0 5px">Bausoll-Prüfung ${claimCompleteness()} %</p>
-          <div class="meter"><span></span></div>
-        </aside>
-      </div>
-      <br />${button("Unterlagen prüfen")}
-    </div>`,
-    "app.nachweis.bau/aenderungsmitteilungen",
-  );
-}
 
 function evidenceGraph() {
   const cards = SCENARIO.demoWorkflow.evidenceCards;
@@ -854,114 +640,13 @@ function pricingEvidenceMap() {
       <div class="sum" style="margin-top:14px">
         ${SCENARIO.pricing.basis} · ${SCENARIO.pricing.total}
       </div>
-      <br />${button("Weiter →")}
-    </div>`,
-    "app.nachweis.bau/aenderungsmitteilungen",
-  );
-}
-
-function commercialConfirm() {
-  return browser(
-    html`<div
-      class="panel"
-      style="text-align:center;max-width:720px;margin:70px auto"
-    >
-      <div class="kicker">Entscheidungsvorlage</div>
-      <h2>Änderungsmitteilung ${SCENARIO.claimId} — 95 % bereit</h2>
-      <p>
-        Bausoll-Abgleich, Komplettheitsrisiko, ca.-Kosten und Terminwirkung sind
-        strukturiert. Die Vorlage geht jetzt an die Projektfreigabe, bevor die
-        Leistung ausgeführt wird.
-      </p>
-      <div class="metadata-grid" style="justify-content:center">
-        ${chip("Bausoll geprüft", "ok")} ${chip("vor Ausführung", "ok")}
-        ${chip(SCENARIO.pricing.total, "ok")}
-      </div>
-      ${button("Zur Freigabe übergeben")}
+      <br />${button("Zur Freigabe übergeben")}
     </div>`,
     "app.nachweis.bau/aenderungsmitteilungen",
   );
 }
 
 // <!-- ============ SILO 3: FREIGABE ============ -->
-function legalQueue() {
-  return browser(
-    html`<div class="panel">
-      <div class="kicker">Projektfreigabe</div>
-      <h2>1 Änderungsmitteilung zur Entscheidung</h2>
-      <div class="queue-item" tabindex="0" data-next>
-        <div>
-          <h3>${SCENARIO.claimId} · ${SCENARIO.title}</h3>
-          <p>${SCENARIO.project} · 95 % bereit · ${SCENARIO.pricing.total}</p>
-          <div class="metadata-grid">
-            ${chip("vor Ausführung", "ok")}
-            ${chip("Komplettheitsklausel", "flag")} ${chip("AG-Grundsatzentscheidung", "blue")}
-          </div>
-        </div>
-        <button class="btn" type="button" data-next>Öffnen</button>
-      </div>
-    </div>`,
-    "app.nachweis.bau/freigabe",
-    true,
-  );
-}
-
-function legalReview() {
-  const resolved = state.legalResolved;
-  const checks = SCENARIO.legalChecks.map((c) =>
-    c[1] || resolved ? [c[0], true] : c,
-  );
-  return browser(
-    html`<div class="panel">
-      <div class="kicker">Freigabeprüfung</div>
-      <h2>Ist das eine echte Änderung oder geschuldete Komplettheit?</h2>
-      <div class="resolve-layout">
-        <div>
-          <div class="checklist">
-            ${checks
-              .map(
-                (c) =>
-                  `<div class="check ${c[1] ? "" : "open"}"><span>${c[0]}</span><b>${c[1] ? "✓" : "1 offen"}</b></div>`,
-              )
-              .join("")}
-          </div>
-          <div class="note-box">
-            <strong>Offen:</strong> ${SCENARIO.finalGap}
-          </div>
-          <button
-            class="btn ${resolved ? "ok" : ""}"
-            type="button"
-            data-resolve-legal
-          >
-            ${resolved
-              ? "Letzter Prüfpunkt erledigt"
-              : "Formulierung bestätigen"}
-          </button>
-        </div>
-        <aside class="mini-panel">
-          <h3>Begründung für Änderungsmitteilung</h3>
-          <p>
-            Die neue Anforderung ${SCENARIO.bauist.description} weicht vom
-            dokumentierten Bausoll (${SCENARIO.bausoll.description}) ab. Die
-            Änderung wurde erst mit Rev. 08 konkretisiert und soll vor
-            Ausführungsbeginn entschieden werden.
-          </p>
-          <div class="metadata-grid">
-            ${chip(SCENARIO.bauist.order, resolved ? "ok" : "flag")}
-            ${chip(SCENARIO.pricing.argument, "ok")}
-          </div>
-        </aside>
-      </div>
-      <br />${button(
-        "Zur AG-Grundsatzentscheidung freigeben",
-        resolved ? "data-next" : "data-resolve-legal",
-      )}
-    </div>`,
-    "app.nachweis.bau/freigabe",
-    true,
-  );
-}
-
 function signoffExport() {
   return browser(
     html`<div class="doc-preview">
