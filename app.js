@@ -335,7 +335,7 @@ function resolveHeight() {
 }
 
 // Bausoll confidence climbs as the plan/document matrix and the change notice are completed:
-// 68 % initial AI triage → +14 checked source docs → +13 cost/risk estimate → 95 %.
+// 68 % initial AI pre-check → +14 checked source docs → +13 cost/risk estimate → 95 %.
 // Approval closes the final wording risk downstream.
 function claimCompleteness() {
   return (
@@ -416,7 +416,7 @@ function planInbox() {
           wenn neue Pläne und Berichte eintreffen und gegen das Bausoll geprüft
           werden müssen.
         </p>
-        ${chip("Bausoll = das A und O", "blue")}
+        ${chip("Bausoll ist der Maßstab", "blue")}
         ${chip("Komplettheitsklausel", "flag")}<br /><br />${button(
           "Revisionswolke prüfen",
         )}
@@ -494,7 +494,7 @@ function planClassification() {
 
   return browser(
     html`<div class="panel">
-      <div class="kicker">KI-Triage</div>
+      <div class="kicker">KI-Vorprüfung</div>
       <h2>Mögliche geänderte Leistung erkannt</h2>
       <div class="resolve-layout">
         <div class="mini-panel">

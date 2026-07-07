@@ -171,7 +171,7 @@ const I18N = {
       "Planänderung vor Baustelle": "Plan change before site",
       "Viele SF-Bau-Nachträge entstehen nicht erst auf der Baustelle, sondern wenn neue Pläne und Berichte eintreffen und gegen das Bausoll geprüft werden müssen.":
         "Many turnkey change orders arise not on site but when new plans and reports arrive and must be checked against the contracted scope.",
-      "Bausoll = das A und O": "Contracted scope = everything",
+      "Bausoll ist der Maßstab": "Contracted scope is the benchmark",
       Komplettheitsklausel: "Completeness clause",
       "Revisionswolke prüfen": "Check revision cloud",
       "Revisionsvergleich": "Revision comparison",
@@ -188,7 +188,7 @@ const I18N = {
         "Revision, reports and contracted scope are compared",
       "Nachweis ordnet die Änderung automatisch den Vertragsunterlagen zu.":
         "Nachweis maps the change to the contract documents automatically.",
-      "KI-Triage": "AI triage",
+      "KI-Vorprüfung": "AI pre-check",
       "Mögliche geänderte Leistung erkannt": "Possible changed service detected",
       "Planrevision fordert höherwertige Brandschutzwand":
         "Plan revision requires higher-grade fire-protection wall",
@@ -601,7 +601,7 @@ const I18N = {
       navHint: "Tastatur: ← zurück · →/Enter weiter · R Neustart",
       back: "← Zurück",
       next: "Weiter →",
-      restart: "Restart",
+      restart: "Neustart",
       restartNext: "Neu starten ↻",
       toast: "Änderungsmitteilung als PDF exportiert",
     },
