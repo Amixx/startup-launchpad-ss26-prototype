@@ -11,8 +11,8 @@ const screens = [
     id: "processing",
     silo: "claim",
     render: renderProcessing,
-    autoAdvance: 4500,
-    demoMs: 4500,
+    autoAdvance: 3200,
+    demoMs: 3200,
   },
   { id: "claim", silo: "claim", render: renderClaimFile, demoMs: 5200 },
   { id: "send", silo: "decision", render: renderSendStatus, demoMs: 2600 },
@@ -221,7 +221,24 @@ function renderCapture() {
           <div class="voice-rec">
             <div><span class="rec-dot"></span>REC voice note</div>
             <div class="voice-wave">
-              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              <div class="wave-track">
+                <i style="--h: 9px"></i><i style="--h: 18px"></i
+                ><i style="--h: 12px"></i><i style="--h: 26px"></i
+                ><i style="--h: 15px"></i><i style="--h: 21px"></i
+                ><i style="--h: 7px"></i><i style="--h: 24px"></i
+                ><i style="--h: 14px"></i><i style="--h: 30px"></i
+                ><i style="--h: 10px"></i><i style="--h: 19px"></i
+                ><i style="--h: 25px"></i><i style="--h: 11px"></i
+                ><i style="--h: 17px"></i><i style="--h: 28px"></i
+                ><i style="--h: 9px"></i><i style="--h: 18px"></i
+                ><i style="--h: 12px"></i><i style="--h: 26px"></i
+                ><i style="--h: 15px"></i><i style="--h: 21px"></i
+                ><i style="--h: 7px"></i><i style="--h: 24px"></i
+                ><i style="--h: 14px"></i><i style="--h: 30px"></i
+                ><i style="--h: 10px"></i><i style="--h: 19px"></i
+                ><i style="--h: 25px"></i><i style="--h: 11px"></i
+                ><i style="--h: 17px"></i><i style="--h: 28px"></i>
+              </div>
             </div>
           </div>
         </div>
@@ -290,13 +307,6 @@ function renderClaimFile() {
               <span>Voice</span><strong>${SCENARIO.capture.voice}</strong>
             </div>
           </div>
-        </section>
-        <section class="panel proof-stack">
-          <div class="proof-tile is-done"><span>Photo</span><b>✓</b></div>
-          <div class="proof-tile is-done"><span>Voice</span><b>✓</b></div>
-          <div class="proof-tile is-done"><span>GPS</span><b>✓</b></div>
-          <div class="proof-tile is-done"><span>Plan</span><b>✓</b></div>
-          <div class="proof-tile is-open"><span>Confirm</span><b>!</b></div>
         </section>
         <section class="panel money-panel">
           <div class="kicker">Money impact</div>
