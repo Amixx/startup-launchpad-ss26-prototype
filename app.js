@@ -82,7 +82,7 @@ function render() {
   stage.innerHTML = `<section class="screen is-active pitch-screen" data-screen="${screen.id}">${screen.render()}</section>`;
   updateRail(screen);
   status.innerHTML = screenLabel(screen.silo);
-  readout.textContent = `${state.current + 1} / ${screens.length} · ${SCENARIO.claimId}`;
+  readout.textContent = "";
   document.querySelector(".footer-nav [data-prev]").disabled =
     state.current === 0;
   document.querySelector(".footer-nav [data-next]").textContent =
@@ -208,65 +208,38 @@ function siteScene() {
 }
 
 function renderCapture() {
-  return html`<div class="pitch-layout pitch-layout--capture">
+  return html`<div class="capture-only">
     ${phone(
       html`<div class="phone-status"><span>10:42</span><span>Nubo</span></div>
         <div class="cam-view">
           ${siteScene()}
-          <div class="cam-top">
-            <span>Evidence capture</span><span>LIVE</span>
-          </div>
+          <div class="cam-top"><span>Evidence</span><span>LIVE</span></div>
           <div class="cam-reticle"></div>
-          <div class="pipe-tag">Unmarked pipe hit</div>
+          <div class="pipe-tag">Pipe hit</div>
           <div class="cam-geo">
             <span class="cam-geo-dot"></span
             ><span
-              >${SCENARIO.capture.location}<br />${SCENARIO.capture.time}<br />GPS
-              + timestamp locked</span
+              >${SCENARIO.capture.location}<br />${SCENARIO.capture.time}</span
             >
           </div>
         </div>
-        <div class="capture-sheet">
-          <div class="kicker">Problem hook</div>
-          <h2>Digger hits a pipe. Work stops.</h2>
-          <p>
-            Owner says: “Prove it.” Nubo captures the proof while the event is
-            still fresh.
-          </p>
-          <button class="btn site-home__button" type="button" data-next>
-            Build claim file →
-          </button>
+        <div class="capture-dock">
+          ${chip("Photo", "ok")} ${chip("Voice", "ok")} ${chip("GPS", "ok")}
+          <button class="btn" type="button" data-next>Save evidence</button>
         </div>`,
     )}
-    <aside class="pitch-copy">
-      <div class="kicker">On site</div>
-      <h1>Capture proof before it disappears.</h1>
-      <div class="big-number">48h</div>
-      <div class="big-number-label">claim notice deadline</div>
-      <p>
-        Photo, voice note, GPS and time are saved at the moment the pipe strike
-        happens.
-      </p>
-      <div class="metadata-grid">
-        ${chip("Photo", "ok")} ${chip("Voice", "ok")} ${chip("Location", "ok")}
-      </div>
-    </aside>
   </div>`;
 }
 
 function renderClaimFile() {
   return browser(
-    html`<div class="claim-hero">
+    html`<div class="claim-hero compact">
         <div>
-          <div class="kicker">AI claim file · ${SCENARIO.claimId}</div>
-          <h1>From messy incident to clear claim.</h1>
-          <p>
-            Nubo turns the site capture into the facts, documents and cost lines
-            the owner asks for.
-          </p>
+          <div class="kicker">Claim file · ${SCENARIO.claimId}</div>
+          <h1>${SCENARIO.incident}</h1>
         </div>
         <div class="value-card">
-          <span>Recoverable cost</span>
+          <span>Total claim</span>
           <strong>${SCENARIO.value}</strong>
           <em>${SCENARIO.deadline}</em>
         </div>
@@ -311,23 +284,17 @@ function renderDecision() {
   return browser(
     html`<div class="decision-layout">
       <section class="panel decision-main">
-        <div class="kicker">Ready for owner discussion</div>
-        <h1>“Prove it.”<br />Now you can.</h1>
-        <p>
-          Instead of losing money in photos, Excel sheets and memory, the team
-          has a complete claim file while the event is still fresh.
-        </p>
-        <div class="decision-number">${SCENARIO.avoided}</div>
+        <div class="kicker">Owner packet</div>
+        <h1>Ready to send</h1>
+        <div class="decision-number">${SCENARIO.value}</div>
         <div class="metadata-grid">
-          ${chip("Clear facts", "ok")} ${chip("Cost basis", "ok")}
-          ${chip("Deadline protected", "ok")}
+          ${chip("Facts", "ok")} ${chip("Costs", "ok")}
+          ${chip("Deadline", "ok")}
         </div>
-        <button class="btn ok" type="button" data-export>
-          Send claim file to owner
-        </button>
+        <button class="btn ok" type="button" data-export>Send to owner</button>
       </section>
       <section class="panel document-preview">
-        <div class="kicker">Claim file contents</div>
+        <div class="kicker">Attachments</div>
         <h2>${SCENARIO.incident}</h2>
         <div class="doc-list">
           ${SCENARIO.documents
