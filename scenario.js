@@ -36,7 +36,7 @@ const SCENARIO = {
     coordinates: "48.1351°N · 11.5820°E",
     time: "Today · 10:42",
     voice:
-      "Hit an unmarked pipe in trench B. Pipe is missing from the plan set. Work stopped at 10:42.",
+      "We just caught a pipe in trench B — not on the drawing. Stopping the excavator now, area is secured. Need repair crew and client confirmation.",
   },
   ai: {
     classification: "Potential change / damage claim",
