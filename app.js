@@ -2,18 +2,20 @@ const state = {
   current: 0,
   exported: false,
   autoTimer: null,
+  autoPlaying: false,
 };
 
 const screens = [
-  { id: "capture", silo: "site", render: renderCapture },
+  { id: "capture", silo: "site", render: renderCapture, demoMs: 2800 },
   {
     id: "processing",
     silo: "claim",
     render: renderProcessing,
-    autoAdvance: 2300,
+    autoAdvance: 4500,
+    demoMs: 4500,
   },
-  { id: "claim", silo: "claim", render: renderClaimFile },
-  { id: "send", silo: "decision", render: renderSendStatus },
+  { id: "claim", silo: "claim", render: renderClaimFile, demoMs: 5200 },
+  { id: "send", silo: "decision", render: renderSendStatus, demoMs: 2600 },
 ];
 
 const stage = document.querySelector("#stage");
@@ -58,6 +60,8 @@ function applyLanguage() {
     staticCopy.back;
   document.querySelector(".footer-nav [data-restart]").textContent =
     staticCopy.restart;
+  document.querySelector(".footer-nav [data-autoplay]").textContent =
+    state.autoPlaying ? staticCopy.autoplaying : staticCopy.autoplay;
   document.querySelector("#toast").textContent = staticCopy.toast;
   document.querySelectorAll("[data-lang]").forEach((button) => {
     button.classList.toggle(
@@ -90,6 +94,9 @@ function render() {
     state.autoTimer = null;
   }
   const screen = screens[state.current];
+  if (state.current === screens.length - 1) {
+    state.autoPlaying = false;
+  }
   stage.innerHTML = `<section class="screen is-active pitch-screen" data-screen="${screen.id}">${screen.render()}</section>`;
   updateRail(screen);
   status.innerHTML = screenLabel(screen.silo);
@@ -102,6 +109,8 @@ function render() {
       : I18N[currentLanguage].static.next;
   document.querySelector(".footer-nav [data-restart]").style.display =
     state.current === screens.length - 1 ? "none" : "";
+  document.querySelector(".footer-nav [data-autoplay]").disabled =
+    state.autoPlaying;
   stage.querySelectorAll("[data-next]").forEach((el) =>
     el.addEventListener("click", (event) => {
       event.stopPropagation();
@@ -121,8 +130,9 @@ function render() {
     }),
   );
   applyLanguage();
-  if (screen.autoAdvance) {
-    state.autoTimer = setTimeout(next, screen.autoAdvance);
+  const autoDelay = state.autoPlaying ? screen.demoMs : screen.autoAdvance;
+  if (autoDelay && state.current < screens.length - 1) {
+    state.autoTimer = setTimeout(() => next(false), autoDelay);
   }
 }
 
@@ -140,27 +150,35 @@ function updateRail(screen) {
   });
 }
 
-function next() {
+function next(manual = true) {
+  if (manual) state.autoPlaying = false;
   if (state.current === screens.length - 1) return restart();
   state.current += 1;
   render();
 }
 
 function prev() {
+  state.autoPlaying = false;
   if (state.current === 0) return;
   state.current -= 1;
   render();
 }
 
-function restart() {
+function restart({ keepAutoplay = false } = {}) {
   if (state.autoTimer) {
     clearTimeout(state.autoTimer);
     state.autoTimer = null;
   }
   state.current = 0;
   state.exported = false;
+  if (!keepAutoplay) state.autoPlaying = false;
   toast.classList.remove("is-visible");
   render();
+}
+
+function autoplay() {
+  state.autoPlaying = true;
+  restart({ keepAutoplay: true });
 }
 
 function exportPdf() {
@@ -203,7 +221,7 @@ function renderCapture() {
           <div class="voice-rec">
             <div><span class="rec-dot"></span>REC voice note</div>
             <div class="voice-wave">
-              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
             </div>
           </div>
         </div>
@@ -236,7 +254,7 @@ function renderProcessing() {
       <div class="processing-list">
         <div><b></b><span>Reading site capture</span></div>
         <div><b></b><span>Matching plan set</span></div>
-        <div><b></b><span>Calculating cost impact</span></div>
+        <div><b></b><span>Calculating claim amount</span></div>
       </div>
     </div>`,
   );
@@ -273,29 +291,12 @@ function renderClaimFile() {
             </div>
           </div>
         </section>
-        <section class="panel claim-middle">
-          <div>
-            <div class="kicker">AI summary</div>
-            <div class="fact-row">
-              <span>Claim basis</span><strong>${SCENARIO.ai.cause}</strong>
-            </div>
-            <div class="fact-row">
-              <span>Extra work</span><strong>${SCENARIO.ai.work}</strong>
-            </div>
-          </div>
-          <div>
-            <div class="kicker">Packet</div>
-            <div class="doc-list compact-doc-list">
-              <div class="check"><span>Photo + timestamp</span><b>✓</b></div>
-              <div class="check">
-                <span>Voice note transcript</span><b>✓</b>
-              </div>
-              <div class="check"><span>Plan extract</span><b>✓</b></div>
-              <div class="check open">
-                <span>Site-supervisor confirmation</span><b>!</b>
-              </div>
-            </div>
-          </div>
+        <section class="panel proof-stack">
+          <div class="proof-tile is-done"><span>Photo</span><b>✓</b></div>
+          <div class="proof-tile is-done"><span>Voice</span><b>✓</b></div>
+          <div class="proof-tile is-done"><span>GPS</span><b>✓</b></div>
+          <div class="proof-tile is-done"><span>Plan</span><b>✓</b></div>
+          <div class="proof-tile is-open"><span>Confirm</span><b>!</b></div>
         </section>
         <section class="panel money-panel">
           <div class="kicker">Money impact</div>
@@ -341,6 +342,9 @@ document
 document
   .querySelector(".footer-nav [data-restart]")
   .addEventListener("click", restart);
+document
+  .querySelector(".footer-nav [data-autoplay]")
+  .addEventListener("click", autoplay);
 document.querySelectorAll("[data-lang]").forEach((button) => {
   button.addEventListener("click", () => {
     currentLanguage = button.dataset.lang;
