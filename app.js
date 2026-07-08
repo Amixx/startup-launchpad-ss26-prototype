@@ -1,25 +1,12 @@
 const state = {
   current: 0,
-  groundResolved: false,
-  heightResolved: false,
-  legalResolved: false,
   exported: false,
-  lastSilo: null,
-  transcriptInterval: null,
-  processingTimeout: null,
-  hotspotTimeout: null,
-  toggledActions: {},
-  selectedPricingRowId: "C03",
 };
 
 const screens = [
-  { id: "s1", silo: "site", number: "01", render: planInbox },
-  { id: "s2", silo: "site", number: "02", render: revisionCloudReview },
-  { id: "s3", silo: "site", number: "02b", render: aiProcessing },
-  { id: "s4", silo: "site", number: "03", render: planClassification },
-  { id: "s8b", silo: "commercial", number: "04", render: evidenceGraph },
-  { id: "s8c", silo: "commercial", number: "05", render: pricingEvidenceMap },
-  { id: "s13", silo: "legal", number: "06", render: signoffExport },
+  { id: "capture", silo: "site", render: renderCapture },
+  { id: "claim", silo: "claim", render: renderClaimFile },
+  { id: "decision", silo: "decision", render: renderDecision },
 ];
 
 const stage = document.querySelector("#stage");
@@ -27,17 +14,6 @@ const rail = document.querySelector("#rail");
 const status = document.querySelector("#status");
 const readout = document.querySelector("#readout");
 const toast = document.querySelector("#toast");
-const hotspotSelector = [
-  "button:not([disabled])",
-  "[data-next]",
-  "[data-prev]:not([disabled])",
-  "[data-restart]",
-  "[data-resolve-proofs]",
-  "[data-resolve-legal]",
-  "[data-export]",
-  "[data-toggle-action]",
-  "[tabindex]",
-].join(",");
 
 function languageFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -45,7 +21,7 @@ function languageFromUrl() {
 
   return Object.prototype.hasOwnProperty.call(I18N, requestedLanguage)
     ? requestedLanguage
-    : "de";
+    : "en";
 }
 
 function setLanguageParam(language) {
@@ -64,60 +40,6 @@ function chip(text, type = "") {
 
 function button(text, attrs = "data-next") {
   return `<button class="btn" type="button" ${attrs}>${text}</button>`;
-}
-
-function isVisibleHotspot(el) {
-  const box = el.getBoundingClientRect();
-  return box.width > 0 && box.height > 0;
-}
-
-function clearHotspotHints() {
-  if (state.hotspotTimeout) {
-    clearTimeout(state.hotspotTimeout);
-    state.hotspotTimeout = null;
-  }
-  document
-    .querySelectorAll(".hotspot-hint")
-    .forEach((el) => el.classList.remove("hotspot-hint"));
-}
-
-function flashHotspots(targets = document.querySelectorAll(hotspotSelector)) {
-  clearHotspotHints();
-  const hotspots = [...targets].filter(isVisibleHotspot);
-  if (!hotspots.length) return;
-
-  hotspots.forEach((el) => el.classList.add("hotspot-hint"));
-  state.hotspotTimeout = setTimeout(clearHotspotHints, 1600);
-}
-
-function translateText(text) {
-  if (currentLanguage === "de") return text;
-  return Object.entries(I18N.en.replace)
-    .sort((a, b) => b[0].length - a[0].length)
-    .reduce(
-      (value, [source, target]) => value.split(source).join(target),
-      text,
-    );
-}
-
-function translateTree(root) {
-  if (currentLanguage === "de") return;
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-    acceptNode(node) {
-      if (!node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
-      if (["SCRIPT", "STYLE"].includes(node.parentElement?.tagName)) {
-        return NodeFilter.FILTER_REJECT;
-      }
-      return NodeFilter.FILTER_ACCEPT;
-    },
-  });
-  const nodes = [];
-  while (walker.nextNode()) nodes.push(walker.currentNode);
-  nodes.forEach((node) => {
-    // Collapse wrapped-line whitespace so multi-word translation keys match
-    // (HTML renders consecutive whitespace as a single space, so this is invisible).
-    node.nodeValue = translateText(node.nodeValue.replace(/\s+/g, " "));
-  });
 }
 
 function applyLanguage() {
@@ -140,41 +62,24 @@ function applyLanguage() {
       button.dataset.lang === currentLanguage ? "true" : "false",
     );
   });
-  translateTree(rail);
-  translateTree(status);
-  translateTree(stage);
 }
 
 function renderShell() {
   document.querySelector("[data-wordmark]").textContent = SCENARIO.product.name;
-  rail.innerHTML =
-    SCENARIO.roles
-      .map(
-        (role) => `<div class="rail__node" data-rail="${role.id}">
+  rail.innerHTML = SCENARIO.roles
+    .map(
+      (role) => `<div class="rail__node" data-rail="${role.id}">
         <span class="rail__kicker">${role.device}</span>
         <span class="rail__name">${role.label}</span>
         <span class="rail__meta">${role.persona}</span>
       </div>`,
-      )
-      .join("") + `<div class="packet" id="packet">${SCENARIO.eventId}</div>`;
+    )
+    .join("");
 }
 
 function render() {
   const screen = screens[state.current];
-  if (state.transcriptInterval) {
-    clearInterval(state.transcriptInterval);
-    state.transcriptInterval = null;
-  }
-  if (state.processingTimeout) {
-    clearTimeout(state.processingTimeout);
-    state.processingTimeout = null;
-  }
-  clearHotspotHints();
-  const silo = baseSilo(screen.silo);
-  const isHandoff = state.lastSilo !== null && state.lastSilo !== silo;
-  state.lastSilo = silo;
-  toast.classList.remove("is-visible");
-  stage.innerHTML = `<section class="screen is-active${isHandoff ? " is-handoff" : ""}" data-screen="${screen.id}">${screen.render()}</section>`;
+  stage.innerHTML = `<section class="screen is-active pitch-screen" data-screen="${screen.id}">${screen.render()}</section>`;
   updateRail(screen);
   status.innerHTML = screenLabel(screen.silo);
   readout.textContent = `${state.current + 1} / ${screens.length} · ${SCENARIO.claimId}`;
@@ -184,34 +89,12 @@ function render() {
     state.current === screens.length - 1
       ? I18N[currentLanguage].static.restartNext
       : I18N[currentLanguage].static.next;
+  document.querySelector(".footer-nav [data-restart]").style.display =
+    state.current === screens.length - 1 ? "none" : "";
   stage.querySelectorAll("[data-next]").forEach((el) =>
     el.addEventListener("click", (event) => {
       event.stopPropagation();
       next();
-    }),
-  );
-  stage.querySelectorAll("[data-restart]").forEach((el) =>
-    el.addEventListener("click", (event) => {
-      event.stopPropagation();
-      restart();
-    }),
-  );
-  stage.querySelectorAll("[data-resolve-ground]").forEach((el) =>
-    el.addEventListener("click", (event) => {
-      event.stopPropagation();
-      resolveGround();
-    }),
-  );
-  stage.querySelectorAll("[data-resolve-height]").forEach((el) =>
-    el.addEventListener("click", (event) => {
-      event.stopPropagation();
-      resolveHeight();
-    }),
-  );
-  stage.querySelectorAll("[data-resolve-legal]").forEach((el) =>
-    el.addEventListener("click", (event) => {
-      event.stopPropagation();
-      resolveLegal();
     }),
   );
   stage.querySelectorAll("[data-export]").forEach((el) =>
@@ -220,39 +103,13 @@ function render() {
       exportPdf();
     }),
   );
-  stage.querySelectorAll("[data-pricing-row]").forEach((el) =>
+  stage.querySelectorAll("[data-restart]").forEach((el) =>
     el.addEventListener("click", (event) => {
       event.stopPropagation();
-      state.selectedPricingRowId = el.dataset.pricingRow;
-      render();
+      restart();
     }),
   );
-  stage.querySelectorAll("[data-toggle-action]").forEach((el) => {
-    el.addEventListener("click", (event) => {
-      event.stopPropagation();
-      const actionId = el.dataset.toggleAction;
-      if (!state.toggledActions) {
-        state.toggledActions = {};
-      }
-      state.toggledActions[actionId] = !state.toggledActions[actionId];
-      render();
-    });
-  });
   applyLanguage();
-
-  setTimeout(() => flashHotspots(stage.querySelectorAll(hotspotSelector)), 260);
-
-  if (screen.id === "s3") {
-    state.processingTimeout = setTimeout(() => {
-      next();
-    }, 1500);
-  }
-}
-
-function baseSilo(silo) {
-  if (silo.includes("commercial")) return "commercial";
-  if (silo.includes("legal")) return "legal";
-  return "site";
 }
 
 function screenLabel(silo) {
@@ -260,53 +117,22 @@ function screenLabel(silo) {
 }
 
 function updateRail(screen) {
-  const active = screen.silo.includes("commercial")
-    ? "commercial"
-    : screen.silo.includes("legal")
-      ? "legal"
-      : "site";
-  const order = ["site", "commercial", "legal"];
-  const index = order.indexOf(active);
+  const order = ["site", "claim", "decision"];
+  const index = order.indexOf(screen.silo);
   rail.querySelectorAll("[data-rail]").forEach((node) => {
     const nodeIndex = order.indexOf(node.dataset.rail);
-    node.classList.toggle("is-active", node.dataset.rail === active);
-    node.classList.toggle(
-      "is-done",
-      nodeIndex < index,
-    );
+    node.classList.toggle("is-active", node.dataset.rail === screen.silo);
+    node.classList.toggle("is-done", nodeIndex < index);
   });
-  const packet = document.querySelector("#packet");
-  packet.textContent = index === 0 ? SCENARIO.eventId : SCENARIO.claimId;
-  packet.style.setProperty(
-    "--packet-x",
-    ["16%", "50%", "84%"][Math.max(0, index)],
-  );
 }
 
 function next() {
-  if (screens[state.current].id === "s8b" && !state.groundResolved) {
-    state.groundResolved = true;
-    return render();
-  }
-  if (screens[state.current].id === "s8c" && !state.heightResolved) {
-    state.heightResolved = true;
-    return render();
-  }
   if (state.current === screens.length - 1) return restart();
   state.current += 1;
   render();
 }
 
 function prev() {
-  // Mirror the in-place resolves so every "next" step is undoable with "back".
-  if (screens[state.current].id === "s8c" && state.heightResolved) {
-    state.heightResolved = false;
-    return render();
-  }
-  if (screens[state.current].id === "s8b" && state.groundResolved) {
-    state.groundResolved = false;
-    return render();
-  }
   if (state.current === 0) return;
   state.current -= 1;
   render();
@@ -314,37 +140,8 @@ function prev() {
 
 function restart() {
   state.current = 0;
-  state.groundResolved = false;
-  state.heightResolved = false;
-  state.legalResolved = false;
   state.exported = false;
-  state.lastSilo = null;
-  state.selectedPricingRowId = "C03";
   toast.classList.remove("is-visible");
-  render();
-}
-
-function resolveGround() {
-  state.groundResolved = true;
-  render();
-}
-
-function resolveHeight() {
-  state.heightResolved = true;
-  render();
-}
-
-// Bausoll confidence climbs as the plan/document matrix and the change notice are completed:
-// 68 % initial AI pre-check → +14 checked source docs → +13 cost/risk estimate → 95 %.
-// Approval closes the final wording risk downstream.
-function claimCompleteness() {
-  return (
-    68 + (state.groundResolved ? 14 : 0) + (state.heightResolved ? 13 : 0)
-  );
-}
-
-function resolveLegal() {
-  state.legalResolved = true;
   render();
 }
 
@@ -354,340 +151,201 @@ function exportPdf() {
   setTimeout(() => toast.classList.remove("is-visible"), 2200);
 }
 
-// <!-- ============ SHARED DESKTOP FRAME ============ -->
-function browser(content, url = "app.nubo.bau/nachtraege", laptop = false) {
-  return `<div class="${laptop ? "frame-laptop" : "frame-browser"}"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(var(--ink-rgb),.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
+function browser(content, url = "app.nubo.ai/claims") {
+  return `<div class="frame-browser pitch-browser"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(var(--ink-rgb),.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
 }
 
-function planInbox() {
-  return browser(
-    html`<div class="dashboard-grid">
-      <div class="panel">
-        <div class="kicker">Planprüfung · ${SCENARIO.project}</div>
-        <h2>Neue Planrevision mit Nachtragspotenzial</h2>
-        <p>${SCENARIO.note}</p>
-        <div class="kpis">
-          <div class="mini-panel kpi">
-            <span class="mono">Revisionspaket</span><strong>${SCENARIO.eventId}</strong>
+function phone(content) {
+  return `<div class="frame-phone pitch-phone"><div class="phone-glass">${content}</div></div>`;
+}
+
+function siteScene() {
+  return `<svg class="site-scene" viewBox="0 0 1200 760" role="img" aria-label="Excavator exposing a damaged underground pipe in a trench">
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#dbeafe" />
+        <stop offset="1" stop-color="#fef3c7" />
+      </linearGradient>
+      <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#9a6b3a" />
+        <stop offset="1" stop-color="#5b351f" />
+      </linearGradient>
+    </defs>
+    <rect width="1200" height="760" fill="url(#sky)" />
+    <rect y="300" width="1200" height="460" fill="#c99055" />
+    <path d="M0 376 C160 332 268 356 430 330 C628 298 770 322 1200 286 L1200 760 L0 760 Z" fill="#a86f3f" />
+    <path d="M168 462 C310 402 888 390 1038 462 L942 760 L250 760 Z" fill="url(#soil)" />
+    <path d="M238 570 C360 536 805 522 958 558" fill="none" stroke="#f7d7a4" stroke-width="28" stroke-linecap="round" opacity="0.65" />
+    <g transform="translate(664 228)">
+      <rect x="-154" y="108" width="245" height="76" rx="12" fill="#f2b705" />
+      <rect x="-78" y="30" width="116" height="92" rx="10" fill="#f6c343" />
+      <rect x="-56" y="46" width="72" height="55" rx="5" fill="#1f2937" opacity="0.86" />
+      <rect x="-178" y="184" width="312" height="42" rx="21" fill="#262626" />
+      <circle cx="-110" cy="205" r="18" fill="#525252" />
+      <circle cx="-38" cy="205" r="18" fill="#525252" />
+      <circle cx="36" cy="205" r="18" fill="#525252" />
+      <path d="M36 52 C162 44 225 126 242 246" fill="none" stroke="#111827" stroke-width="25" stroke-linecap="round" />
+      <path d="M238 242 L304 318" fill="none" stroke="#111827" stroke-width="22" stroke-linecap="round" />
+      <path d="M296 304 L352 326 L304 358 Z" fill="#3f3f46" />
+    </g>
+    <g transform="translate(248 520)">
+      <path d="M0 72 C170 20 418 2 688 38" fill="none" stroke="#cbd5e1" stroke-width="82" stroke-linecap="round" />
+      <path d="M376 33 L478 48" stroke="#111827" stroke-width="88" stroke-linecap="round" />
+      <path d="M374 32 L478 48" stroke="#ef4444" stroke-width="64" stroke-linecap="round" />
+      <path d="M470 50 C512 68 500 116 450 120" fill="none" stroke="#60a5fa" stroke-width="12" stroke-linecap="round" opacity="0.92" />
+    </g>
+    <g transform="translate(60 354)">
+      <path d="M0 118 L42 10 L84 118 Z" fill="#f97316" />
+      <rect x="20" y="58" width="44" height="16" fill="#fff" />
+      <rect x="-8" y="118" width="100" height="16" rx="4" fill="#7c2d12" />
+    </g>
+    <g transform="translate(1032 328)">
+      <path d="M0 118 L42 10 L84 118 Z" fill="#f97316" />
+      <rect x="20" y="58" width="44" height="16" fill="#fff" />
+      <rect x="-8" y="118" width="100" height="16" rx="4" fill="#7c2d12" />
+    </g>
+  </svg>`;
+}
+
+function renderCapture() {
+  return html`<div class="pitch-layout pitch-layout--capture">
+    ${phone(
+      html`<div class="phone-status"><span>10:42</span><span>Nubo</span></div>
+        <div class="cam-view">
+          ${siteScene()}
+          <div class="cam-top">
+            <span>Evidence capture</span><span>LIVE</span>
           </div>
-          <div class="mini-panel kpi">
-            <span class="mono">Unterlagen</span><strong>6</strong>
-          </div>
-          <div class="mini-panel kpi">
-            <span class="mono">Start Ausführung</span><strong style="color:var(--flag)">9T</strong>
+          <div class="cam-reticle"></div>
+          <div class="pipe-tag">Unmarked pipe hit</div>
+          <div class="cam-geo">
+            <span class="cam-geo-dot"></span
+            ><span
+              >${SCENARIO.capture.location}<br />${SCENARIO.capture.time}<br />GPS
+              + timestamp locked</span
+            >
           </div>
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Quelle</th>
-              <th>Planstand</th>
-              <th>Status</th>
-              <th>Hinweis</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Grundriss A‑203</td>
-              <td>Rev. 08</td>
-              <td>${chip("Revisionswolke", "flag")}</td>
-              <td>Achse B4 markiert</td>
-            </tr>
-            <tr class="highlight" tabindex="0" data-next>
-              <td>Brandschutzbericht</td>
-              <td>Rev. 08</td>
-              <td>${chip("Konflikt", "flag")}</td>
-              <td>F90 statt F0</td>
-            </tr>
-            <tr>
-              <td>Bauphysikkatalog</td>
-              <td>Rev. 03</td>
-              <td>${chip("ungeprüft")}</td>
-              <td>Raumabschluss offen</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="capture-sheet">
+          <div class="kicker">Problem hook</div>
+          <h2>Digger hits a pipe. Work stops.</h2>
+          <p>
+            Owner says: “Prove it.” Nubo captures the proof while the event is
+            still fresh.
+          </p>
+          <button class="btn site-home__button" type="button" data-next>
+            Build claim file →
+          </button>
+        </div>`,
+    )}
+    <aside class="pitch-copy">
+      <div class="kicker">On site</div>
+      <h1>Capture proof before it disappears.</h1>
+      <div class="big-number">48h</div>
+      <div class="big-number-label">claim notice deadline</div>
+      <p>
+        Photo, voice note, GPS and time are saved at the moment the pipe strike
+        happens.
+      </p>
+      <div class="metadata-grid">
+        ${chip("Photo", "ok")} ${chip("Voice", "ok")} ${chip("Location", "ok")}
       </div>
-      <aside class="panel">
-        <div class="kicker">Workflow-Hinweis</div>
-        <h3>Planänderung vor Baustelle</h3>
-        <p>
-          Viele SF-Bau-Nachträge entstehen nicht erst auf der Baustelle, sondern
-          wenn neue Pläne und Berichte eintreffen und gegen das Bausoll geprüft
-          werden müssen.
-        </p>
-        ${chip("Bausoll ist der Maßstab", "blue")}
-        ${chip("Komplettheitsklausel", "flag")}<br /><br />${button(
-          "Revisionswolke prüfen",
-        )}
-      </aside>
-    </div>`,
-    "app.nubo.bau/planpruefung",
-  );
+    </aside>
+  </div>`;
 }
 
-function revisionCloudReview() {
+function renderClaimFile() {
   return browser(
-    html`<div class="panel">
-      <div class="kicker">Revisionsvergleich · ${SCENARIO.eventId}</div>
-      <h2>Was hat sich gegenüber dem Vertragsstand geändert?</h2>
-      <div class="plan-review-grid">
-        <div class="plan-sheet">
-          <div class="revision-cloud cloud-a">F0</div>
-          <div class="wall-line"></div>
-          <div class="plan-label">A‑203 Rev. 03 · Vertragsbasis</div>
-        </div>
-        <div class="vs"><span>↔</span></div>
-        <div class="plan-sheet is-new">
-          <div class="revision-cloud cloud-b">F90</div>
-          <div class="wall-line is-flagged"></div>
-          <div class="plan-label">BSK Rev. 08 · neue Anforderung</div>
-        </div>
-        <aside class="mini-panel">
-          <h3>Automatisch erkannt</h3>
-          <div class="checklist">
-            <div class="check"><span>Revisionswolke Achse B4</span><b>✓</b></div>
-            <div class="check"><span>F0 ↔ F90 Widerspruch</span><b>✓</b></div>
-            <div class="check open"><span>Bauphysik-Gegencheck fehlt</span><b>!</b></div>
-          </div>
-        </aside>
-      </div>
-      <br />${button("Bausoll-Abgleich starten")}
-    </div>`,
-    "app.nubo.bau/planpruefung",
-  );
-}
-
-function aiProcessing() {
-  return browser(
-    html`<div class="panel processing-panel">
-      <div class="spinner-ring"></div>
-      <div>
-        <div class="kicker">Planpaket wird strukturiert…</div>
-        <h2>Revision, Berichte und Bausoll werden abgeglichen</h2>
-        <p>Nubo ordnet die Änderung automatisch den Vertragsunterlagen zu.</p>
-      </div>
-    </div>`,
-    "app.nubo.bau/planpruefung",
-  );
-}
-
-function planClassification() {
-  const sum = SCENARIO.aiSummary;
-  const termChip = chip(`${sum.terminauswirkung.duration}`, "flag");
-  const manualItems = SCENARIO.smartActions
-    .filter((a) => !a.auto)
-    .map(
-      (action) => `<div class="check open">
-        <span>${action.icon} ${action.task}</span><b>offen</b>
-      </div>`,
-    )
-    .join("");
-  const autoItems = SCENARIO.smartActions
-    .filter((a) => a.auto)
-    .map(
-      (action) => `<div class="check">
-        <span>${action.icon} ${action.task}</span><b>✓</b>
-      </div>`,
-    )
-    .join("");
-
-  return browser(
-    html`<div class="panel">
-      <div class="kicker">KI-Vorprüfung</div>
-      <h2>Mögliche geänderte Leistung erkannt</h2>
-      <div class="resolve-layout">
-        <div class="mini-panel">
-          <h3>${sum.what}</h3>
-          <div class="metadata-grid">
-            ${chip(sum.location.bauteil, "blue")} ${chip(sum.location.geschoss, "blue")}
-            ${termChip}
-          </div>
-          <div class="soll-ist-compare">
-            <div class="compare-row soll"><span class="compare-label">Bausoll</span><span class="compare-val">${sum.spiegel.soll}</span></div>
-            <div class="compare-row ist"><span class="compare-label">Neue Revision</span><span class="compare-val">${sum.spiegel.ist}</span></div>
-          </div>
-          <p style="margin-top:14px">${sum.instruction}</p>
-        </div>
+    html`<div class="claim-hero">
         <div>
-          <h3>Prüfaufgaben</h3>
-          <div class="checklist">
-            ${autoItems}
-            ${manualItems}
+          <div class="kicker">AI claim file · ${SCENARIO.claimId}</div>
+          <h1>From messy incident to clear claim.</h1>
+          <p>
+            Nubo turns the site capture into the facts, documents and cost lines
+            the owner asks for.
+          </p>
+        </div>
+        <div class="value-card">
+          <span>Recoverable cost</span>
+          <strong>${SCENARIO.value}</strong>
+          <em>${SCENARIO.deadline}</em>
+        </div>
+      </div>
+      <div class="claim-grid">
+        <section class="panel evidence-photo">
+          ${siteScene()}
+          <div class="photo-caption">${SCENARIO.capture.source}</div>
+        </section>
+        <section class="panel">
+          <div class="kicker">AI summary</div>
+          <div class="fact-row">
+            <span>What happened</span><strong>${SCENARIO.incident}</strong>
           </div>
-        </div>
-      </div>
-      <br />${button("An Projektteam übergeben")}
-    </div>`,
-    "app.nubo.bau/planpruefung",
-  );
-}
-
-// <!-- ============ SILO 2: ÄNDERUNGSMITTEILUNG ============ -->
-
-function evidenceGraph() {
-  const cards = SCENARIO.demoWorkflow.evidenceCards;
-  const resolved = state.groundResolved;
-  const pct = claimCompleteness();
-
-  function renderCard(c) {
-    const open = c.id === "D04" && !resolved;
-    return `<div class="mini-panel ${open ? "is-open-doc" : ""}">
-      <div class="metadata-grid" style="margin-bottom:6px">
-        ${chip(c.id, "blue")} ${chip(c.type)}
-      </div>
-      <strong>${c.title}</strong>
-      <p class="mono" style="color:var(--muted);font-size:12px;margin:4px 0 0">${c.role}</p>
-      ${open
-        ? `<p class="mono" style="color:var(--flag);font-size:11px;margin:6px 0 0">⚠ ${c.note}</p>`
-        : `<p class="mono" style="color:var(--ok);font-size:11px;margin:6px 0 0">✓ geprüft</p>`}
-    </div>`;
-  }
-
-  return browser(
-    html`<div class="panel">
-      <h2>Bausoll-Nachweis · ${SCENARIO.claimId}</h2>
-      <p>Die Änderungsmitteilung wird nicht aus Baustellenfotos gebaut, sondern aus dem prüfbaren Abgleich aller relevanten Plan- und Vertragsunterlagen.</p>
-      <div class="doc-matrix">
-        ${cards.map(renderCard).join("")}
-      </div>
-      <p class="mono" style="margin:18px 0 5px">Bausoll-Prüfung ${pct} %</p>
-      <div class="meter" style="--value:${pct}%"><span></span></div>
-      <br /><button
-        class="btn ${resolved ? "ok" : ""}"
-        type="button"
-        data-resolve-ground
-      >
-        ${resolved ? "Bauphysik geprüft" : "Bauphysik prüfen"}
-      </button>
-      ${button("Weiter →")}
-    </div>`,
-    "app.nubo.bau/aenderungsmitteilungen",
-  );
-}
-
-function pricingEvidenceMap() {
-  const rows = SCENARIO.demoWorkflow.pricingRows;
-  const resolved = state.heightResolved;
-  const pct = claimCompleteness();
-  const isFixed = (r) => r.id === "C03" && resolved;
-
-  const sel =
-    rows.find((r) => r.id === state.selectedPricingRowId) ||
-    rows.find((r) => r.risk === "red") ||
-    rows[0];
-  const selFixed = isFixed(sel);
-  const borderColor = selFixed
-    ? "var(--ok)"
-    : sel.risk === "red"
-      ? "var(--flag)"
-      : "var(--flag-bright)";
-
-  const costLines = rows
-    .map((r) => {
-      const isSelected = r.id === sel.id;
-      const dotColor = isFixed(r)
-        ? "var(--ok)"
-        : r.risk === "red"
-          ? "var(--flag)"
-          : "var(--flag-bright)";
-      return `<div
-          data-pricing-row="${r.id}"
-          style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:4px;cursor:pointer;${isSelected ? "background:rgba(var(--ring-rgb),.1);outline:1px solid rgba(var(--ring-rgb),.4);" : ""}">
-        <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};flex-shrink:0"></span>
-        ${chip(r.id, "blue")}
-        <span style="flex:1;font-size:13px">${r.description}</span>
-        <span class="mono" style="font-size:12px;color:var(--muted)">${r.amount}</span>
-      </div>`;
-    })
-    .join("");
-
-  const riskChip = selFixed
-    ? chip("geklärt", "ok")
-    : sel.risk === "red"
-      ? chip("Komplettheitsrisiko", "flag")
-      : `<span class="chip" style="background:rgba(var(--flag-bright-rgb),.15);color:var(--flag-bright)">offen</span>`;
-  const detailBody = selFixed
-    ? `<p style="margin:0;color:var(--ok);font-size:13px">✓ ${sel.missingProof}</p>`
-    : `<p style="font-size:13px;margin:0 0 12px;color:var(--muted)">${sel.weakness}</p>
-       <p style="margin:0;color:var(--ok);font-size:13px">→ ${sel.missingProof}</p>`;
-
-  return browser(
-    html`<div class="panel">
-      <h2>Änderungsmitteilung vorbereiten · ${SCENARIO.claimId}</h2>
-      <div class="resolve-layout">
-        <div style="display:flex;flex-direction:column;gap:4px">
-          ${costLines}
-        </div>
-        <div style="border-left:3px solid ${borderColor};padding-left:14px;align-self:flex-start">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:10px">
-            <strong>${sel.id} · ${sel.description}</strong>
-            ${riskChip}
+          <div class="fact-row">
+            <span>Why claimable</span><strong>${SCENARIO.ai.cause}</strong>
           </div>
-          <div style="margin-bottom:10px">${sel.evidence.map((e) => chip(e, "blue")).join(" ")}</div>
-          ${detailBody}
-        </div>
-      </div>
-      <p class="mono" style="margin:18px 0 5px">Entscheidungsvorlage ${pct} %</p>
-      <div class="meter" style="--value:${pct}%"><span></span></div>
-      <br /><button
-        class="btn ${resolved ? "ok" : ""}"
-        type="button"
-        data-resolve-height
-      >
-        ${resolved ? "Risikoargument ergänzt" : "Komplettheitsargument ergänzen"}
-      </button>
-      <div class="sum" style="margin-top:14px">
-        ${SCENARIO.pricing.basis} · ${SCENARIO.pricing.total}
-      </div>
-      <br />${button("Zur Freigabe übergeben")}
-    </div>`,
-    "app.nubo.bau/aenderungsmitteilungen",
+          <div class="fact-row">
+            <span>Extra work</span><strong>${SCENARIO.ai.work}</strong>
+          </div>
+          <div class="fact-row warning">
+            <span>Still needed</span><strong>${SCENARIO.ai.missing}</strong>
+          </div>
+        </section>
+        <section class="panel money-panel">
+          <div class="kicker">Money impact</div>
+          ${SCENARIO.money
+            .map(
+              ([label, amount]) =>
+                `<div class="money-line"><span>${label}</span><strong>${amount}</strong></div>`,
+            )
+            .join("")}
+          <div class="money-total">
+            <span>Total claim</span><strong>${SCENARIO.value}</strong>
+          </div>
+        </section>
+      </div> `,
   );
 }
 
-// <!-- ============ SILO 3: FREIGABE ============ -->
-function signoffExport() {
+function renderDecision() {
   return browser(
-    html`<div class="doc-preview">
-      <aside class="panel">
-        <div class="kicker">Status</div>
-        <h2 style="color:var(--ok);font-size:24px;line-height:1.08;overflow-wrap:anywhere">Änderungsmitteilung freigegeben</h2>
-        <p>Die Entscheidungsvorlage ist bereit für Export und AG-Abstimmung.</p>
+    html`<div class="decision-layout">
+      <section class="panel decision-main">
+        <div class="kicker">Ready for owner discussion</div>
+        <h1>“Prove it.”<br />Now you can.</h1>
+        <p>
+          Instead of losing money in photos, Excel sheets and memory, the team
+          has a complete claim file while the event is still fresh.
+        </p>
+        <div class="decision-number">${SCENARIO.avoided}</div>
         <div class="metadata-grid">
-          ${chip(SCENARIO.claimId, "blue")}
-          ${chip(SCENARIO.pricing.total, "ok")} ${chip("vor Ausführung", "ok")}
+          ${chip("Clear facts", "ok")} ${chip("Cost basis", "ok")}
+          ${chip("Deadline protected", "ok")}
         </div>
         <button class="btn ok" type="button" data-export>
-          Änderungsmitteilung exportieren (PDF)</button
-        ><br /><br />${button("Neu starten", "data-restart")}
-      </aside>
-      <div class="document">
-        <div class="kicker">Dokumentvorschau</div>
-        <h3>Änderungsmitteilung · ${SCENARIO.claimId}</h3>
-        <p><strong>${SCENARIO.title}</strong><br />${SCENARIO.project}</p>
-        <table>
-          <tbody>
-            ${SCENARIO.documentSections
-              .map(
-                (s) =>
-                  `<tr><td>${s}</td><td>${chip("enthalten", "ok")}</td></tr>`,
-              )
-              .join("")}
-            <tr>
-              <td>ca.-Kosten</td>
-              <td><strong>${SCENARIO.pricing.total}</strong></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+          Send claim file to owner
+        </button>
+      </section>
+      <section class="panel document-preview">
+        <div class="kicker">Claim file contents</div>
+        <h2>${SCENARIO.incident}</h2>
+        <div class="doc-list">
+          ${SCENARIO.documents
+            .map(
+              (item) => `<div class="check"><span>${item}</span><b>✓</b></div>`,
+            )
+            .join("")}
+        </div>
+        <div class="claim-summary-card">
+          <span>Total claim</span>
+          <strong>${SCENARIO.value}</strong>
+          <small>${SCENARIO.deadline}</small>
+        </div>
+      </section>
     </div>`,
-    "app.nubo.bau/freigabe",
-    true,
   );
 }
 
-// <!-- ============ NAV / TRANSITIONS (JS) ============ -->
 currentLanguage = languageFromUrl();
 renderShell();
 render();
@@ -707,10 +365,6 @@ document.querySelectorAll("[data-lang]").forEach((button) => {
     renderShell();
     render();
   });
-});
-document.addEventListener("click", (event) => {
-  if (event.target.closest(hotspotSelector)) return;
-  flashHotspots(stage.querySelectorAll(hotspotSelector));
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && event.target.closest("button")) return;
