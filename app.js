@@ -155,56 +155,8 @@ function browser(content, url = "app.nubo.ai/claims") {
   return `<div class="frame-browser pitch-browser"><div class="browser-chrome"><div class="dots"><span></span><span></span><span></span></div><div class="url">${url}</div><div class="mono" style="text-align:right;color:rgba(var(--ink-rgb),.48)">${SCENARIO.product.name}</div></div><div class="browser-body">${content}</div></div>`;
 }
 
-function phone(content) {
-  return `<div class="frame-phone pitch-phone"><div class="phone-glass">${content}</div></div>`;
-}
-
-function siteScene() {
-  return `<svg class="site-scene" viewBox="0 0 1200 760" role="img" aria-label="Excavator exposing a damaged underground pipe in a trench">
-    <defs>
-      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#dbeafe" />
-        <stop offset="1" stop-color="#fef3c7" />
-      </linearGradient>
-      <linearGradient id="soil" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#9a6b3a" />
-        <stop offset="1" stop-color="#5b351f" />
-      </linearGradient>
-    </defs>
-    <rect width="1200" height="760" fill="url(#sky)" />
-    <rect y="300" width="1200" height="460" fill="#c99055" />
-    <path d="M0 376 C160 332 268 356 430 330 C628 298 770 322 1200 286 L1200 760 L0 760 Z" fill="#a86f3f" />
-    <path d="M168 462 C310 402 888 390 1038 462 L942 760 L250 760 Z" fill="url(#soil)" />
-    <path d="M238 570 C360 536 805 522 958 558" fill="none" stroke="#f7d7a4" stroke-width="28" stroke-linecap="round" opacity="0.65" />
-    <g transform="translate(664 228)">
-      <rect x="-154" y="108" width="245" height="76" rx="12" fill="#f2b705" />
-      <rect x="-78" y="30" width="116" height="92" rx="10" fill="#f6c343" />
-      <rect x="-56" y="46" width="72" height="55" rx="5" fill="#1f2937" opacity="0.86" />
-      <rect x="-178" y="184" width="312" height="42" rx="21" fill="#262626" />
-      <circle cx="-110" cy="205" r="18" fill="#525252" />
-      <circle cx="-38" cy="205" r="18" fill="#525252" />
-      <circle cx="36" cy="205" r="18" fill="#525252" />
-      <path d="M36 52 C162 44 225 126 242 246" fill="none" stroke="#111827" stroke-width="25" stroke-linecap="round" />
-      <path d="M238 242 L304 318" fill="none" stroke="#111827" stroke-width="22" stroke-linecap="round" />
-      <path d="M296 304 L352 326 L304 358 Z" fill="#3f3f46" />
-    </g>
-    <g transform="translate(248 520)">
-      <path d="M0 72 C170 20 418 2 688 38" fill="none" stroke="#cbd5e1" stroke-width="82" stroke-linecap="round" />
-      <path d="M376 33 L478 48" stroke="#111827" stroke-width="88" stroke-linecap="round" />
-      <path d="M374 32 L478 48" stroke="#ef4444" stroke-width="64" stroke-linecap="round" />
-      <path d="M470 50 C512 68 500 116 450 120" fill="none" stroke="#60a5fa" stroke-width="12" stroke-linecap="round" opacity="0.92" />
-    </g>
-    <g transform="translate(60 354)">
-      <path d="M0 118 L42 10 L84 118 Z" fill="#f97316" />
-      <rect x="20" y="58" width="44" height="16" fill="#fff" />
-      <rect x="-8" y="118" width="100" height="16" rx="4" fill="#7c2d12" />
-    </g>
-    <g transform="translate(1032 328)">
-      <path d="M0 118 L42 10 L84 118 Z" fill="#f97316" />
-      <rect x="20" y="58" width="44" height="16" fill="#fff" />
-      <rect x="-8" y="118" width="100" height="16" rx="4" fill="#7c2d12" />
-    </g>
-  </svg>`;
+function phone(content, className = "") {
+  return `<div class="frame-phone pitch-phone ${className}"><div class="phone-glass">${content}</div></div>`;
 }
 
 function renderCapture() {
@@ -212,8 +164,17 @@ function renderCapture() {
     ${phone(
       html`<div class="phone-status"><span>10:42</span><span>Nubo</span></div>
         <div class="cam-view">
-          ${siteScene()}
-          <div class="cam-top"><span>Evidence</span><span>LIVE</span></div>
+          <img
+            src="pipe-strike.png"
+            alt="Excavator exposing a damaged underground pipe"
+            loading="eager"
+          />
+          <div class="cam-top">
+            <span>10:42</span>
+            <div class="cam-top-ctrls">
+              <span>⚡ Auto</span><span>HDR</span>
+            </div>
+          </div>
           <div class="cam-reticle"></div>
           <div class="pipe-tag">Pipe hit</div>
           <div class="cam-geo">
@@ -223,10 +184,23 @@ function renderCapture() {
             >
           </div>
         </div>
-        <div class="capture-dock">
-          ${chip("Photo", "ok")} ${chip("Voice", "ok")} ${chip("GPS", "ok")}
-          <button class="btn" type="button" data-next>Save evidence</button>
+        <div class="cam-bar">
+          <div class="cam-modes">
+            <span>VIDEO</span><span class="is-active">PHOTO</span
+            ><span>PANO</span>
+          </div>
+          <div class="cam-actions">
+            <span class="cam-thumb"></span>
+            <button
+              class="cam-shutter"
+              type="button"
+              data-next
+              aria-label="Shutter"
+            ></button>
+            <span class="cam-flip">⟳</span>
+          </div>
         </div>`,
+      "camera-phone",
     )}
   </div>`;
 }
@@ -246,7 +220,10 @@ function renderClaimFile() {
       </div>
       <div class="claim-grid">
         <section class="panel evidence-photo">
-          ${siteScene()}
+          <img
+            src="pipe-strike.png"
+            alt="Excavator exposing a damaged underground pipe"
+          />
           <div class="photo-caption">${SCENARIO.capture.source}</div>
         </section>
         <section class="panel">

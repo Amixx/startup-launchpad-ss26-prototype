@@ -3,17 +3,17 @@
   --bg: #f6f7f8;
   --bg-2: #eef0f2;
   --surface: #ffffff;
-  --paper: #fffcf4;
-  --ink: #17130f;
+  --paper: #f6f7f8;
+  --ink: #15181c;
   --muted: #616a74;
   --line: rgba(var(--ink-rgb), 0.12);
   --line-strong: rgba(var(--ink-rgb), 0.22);
-  --accent: #c2410c;
-  --accent-rgb: 194, 65, 12;
-  --accent-dark: #9a3208;
-  --accent-bright: #f0692f;
-  --ring: #f6b48c;
-  --ring-rgb: 246, 180, 140;
+  --accent: #2f6bff;
+  --accent-rgb: 47, 107, 255;
+  --accent-dark: #1d4fcc;
+  --accent-bright: #4b82ff;
+  --ring: #a9c4ff;
+  --ring-rgb: 169, 196, 255;
   --grid: rgba(var(--ink-rgb), 0.08);
   --grid-strong: rgba(var(--ink-rgb), 0.12);
   --flag: #e0a100;
@@ -21,7 +21,7 @@
   --alert: #c8392b;
 
   /* Channel vars for translucent tints (rgba(var(--x-rgb), a)) */
-  --ink-rgb: 23, 19, 15;
+  --ink-rgb: 21, 24, 28;
   --white: #fff;
   --white-rgb: 255, 255, 255;
   --black-rgb: 0, 0, 0;
@@ -1880,8 +1880,25 @@ tr.highlight {
   background: var(--white);
 }
 
+.pitch-phone.camera-phone .phone-glass {
+  background: var(--device-deep);
+  color: var(--white);
+}
+
 .pitch-phone .cam-view {
   flex: 1 1 auto;
+}
+
+.pitch-phone .cam-view img {
+  object-position: 50% 50%;
+}
+
+.pitch-phone .cam-bar {
+  padding-bottom: 18px;
+}
+
+.pitch-phone .cam-thumb {
+  background-image: url(pipe-strike.png);
 }
 
 .capture-dock {
