@@ -41,7 +41,7 @@ jobs:
             local target="$2"
 
             mkdir -p "$target"
-            for file in index.html styles.css scenario.js app.js theme-switcher.js excavation-evidence.png; do
+            for file in index.html styles.css scenario.js app.js theme-switcher.js excavation-evidence.png pipe-strike.png; do
               if git cat-file -e "$ref:$file" 2>/dev/null; then
                 git show "$ref:$file" > "$target/$file"
               fi
