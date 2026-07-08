@@ -212,32 +212,34 @@ function renderCapture() {
             </div>
           </div>
           <div class="cam-reticle"></div>
-          <div class="cam-geo">
-            <span class="cam-geo-dot"></span
-            ><span
-              >${SCENARIO.capture.location}<br />${SCENARIO.capture.coordinates}<br />${SCENARIO.capture.time}</span
-            >
-          </div>
-          <div class="voice-rec">
-            <div><span class="rec-dot"></span>REC voice note</div>
-            <div class="voice-wave">
-              <div class="wave-track">
-                <i style="--h: 9px"></i><i style="--h: 18px"></i
-                ><i style="--h: 12px"></i><i style="--h: 26px"></i
-                ><i style="--h: 15px"></i><i style="--h: 21px"></i
-                ><i style="--h: 7px"></i><i style="--h: 24px"></i
-                ><i style="--h: 14px"></i><i style="--h: 30px"></i
-                ><i style="--h: 10px"></i><i style="--h: 19px"></i
-                ><i style="--h: 25px"></i><i style="--h: 11px"></i
-                ><i style="--h: 17px"></i><i style="--h: 28px"></i
-                ><i style="--h: 9px"></i><i style="--h: 18px"></i
-                ><i style="--h: 12px"></i><i style="--h: 26px"></i
-                ><i style="--h: 15px"></i><i style="--h: 21px"></i
-                ><i style="--h: 7px"></i><i style="--h: 24px"></i
-                ><i style="--h: 14px"></i><i style="--h: 30px"></i
-                ><i style="--h: 10px"></i><i style="--h: 19px"></i
-                ><i style="--h: 25px"></i><i style="--h: 11px"></i
-                ><i style="--h: 17px"></i><i style="--h: 28px"></i>
+          <div class="capture-hud">
+            <div class="cam-geo">
+              <span class="cam-geo-dot"></span
+              ><span
+                >${SCENARIO.capture.location}<br />${SCENARIO.capture.coordinates}<br />${SCENARIO.capture.time}</span
+              >
+            </div>
+            <div class="voice-rec">
+              <div><span class="rec-dot"></span>REC voice note</div>
+              <div class="voice-wave">
+                <div class="wave-track">
+                  <i style="--h: 9px"></i><i style="--h: 18px"></i
+                  ><i style="--h: 12px"></i><i style="--h: 26px"></i
+                  ><i style="--h: 15px"></i><i style="--h: 21px"></i
+                  ><i style="--h: 7px"></i><i style="--h: 24px"></i
+                  ><i style="--h: 14px"></i><i style="--h: 30px"></i
+                  ><i style="--h: 10px"></i><i style="--h: 19px"></i
+                  ><i style="--h: 25px"></i><i style="--h: 11px"></i
+                  ><i style="--h: 17px"></i><i style="--h: 28px"></i
+                  ><i style="--h: 9px"></i><i style="--h: 18px"></i
+                  ><i style="--h: 12px"></i><i style="--h: 26px"></i
+                  ><i style="--h: 15px"></i><i style="--h: 21px"></i
+                  ><i style="--h: 7px"></i><i style="--h: 24px"></i
+                  ><i style="--h: 14px"></i><i style="--h: 30px"></i
+                  ><i style="--h: 10px"></i><i style="--h: 19px"></i
+                  ><i style="--h: 25px"></i><i style="--h: 11px"></i
+                  ><i style="--h: 17px"></i><i style="--h: 28px"></i>
+                </div>
               </div>
             </div>
           </div>
