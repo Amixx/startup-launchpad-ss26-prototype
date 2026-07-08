@@ -33,8 +33,10 @@ const SCENARIO = {
     "Excavator hit a pipe while digging trench section B. The pipe was not marked in the plan. Work stopped at 10:42. We need repair, delay notice, and evidence for the claim file.",
   capture: {
     location: "Trench B · chainage 42m",
+    coordinates: "48.1351°N · 11.5820°E",
     time: "Today · 10:42",
-    source: "Photo + voice note + GPS",
+    voice:
+      "Hit an unmarked pipe in trench B. Pipe is missing from the plan set. Work stopped at 10:42.",
   },
   ai: {
     classification: "Potential change / damage claim",

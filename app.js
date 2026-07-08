@@ -1,12 +1,19 @@
 const state = {
   current: 0,
   exported: false,
+  autoTimer: null,
 };
 
 const screens = [
   { id: "capture", silo: "site", render: renderCapture },
+  {
+    id: "processing",
+    silo: "claim",
+    render: renderProcessing,
+    autoAdvance: 2300,
+  },
   { id: "claim", silo: "claim", render: renderClaimFile },
-  { id: "decision", silo: "decision", render: renderDecision },
+  { id: "send", silo: "decision", render: renderSendStatus },
 ];
 
 const stage = document.querySelector("#stage");
@@ -78,6 +85,10 @@ function renderShell() {
 }
 
 function render() {
+  if (state.autoTimer) {
+    clearTimeout(state.autoTimer);
+    state.autoTimer = null;
+  }
   const screen = screens[state.current];
   stage.innerHTML = `<section class="screen is-active pitch-screen" data-screen="${screen.id}">${screen.render()}</section>`;
   updateRail(screen);
@@ -110,6 +121,9 @@ function render() {
     }),
   );
   applyLanguage();
+  if (screen.autoAdvance) {
+    state.autoTimer = setTimeout(next, screen.autoAdvance);
+  }
 }
 
 function screenLabel(silo) {
@@ -139,6 +153,10 @@ function prev() {
 }
 
 function restart() {
+  if (state.autoTimer) {
+    clearTimeout(state.autoTimer);
+    state.autoTimer = null;
+  }
   state.current = 0;
   state.exported = false;
   toast.classList.remove("is-visible");
@@ -176,12 +194,17 @@ function renderCapture() {
             </div>
           </div>
           <div class="cam-reticle"></div>
-          <div class="pipe-tag">Pipe hit</div>
           <div class="cam-geo">
             <span class="cam-geo-dot"></span
             ><span
-              >${SCENARIO.capture.location}<br />${SCENARIO.capture.time}</span
+              >${SCENARIO.capture.location}<br />${SCENARIO.capture.coordinates}<br />${SCENARIO.capture.time}</span
             >
+          </div>
+          <div class="voice-rec">
+            <div><span class="rec-dot"></span>REC voice note</div>
+            <div class="voice-wave">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
           </div>
         </div>
         <div class="cam-bar">
@@ -205,6 +228,20 @@ function renderCapture() {
   </div>`;
 }
 
+function renderProcessing() {
+  return browser(
+    html`<div class="processing-demo">
+      <div class="ai-spinner"></div>
+      <div class="processing-title">Building claim file</div>
+      <div class="processing-list">
+        <div><b></b><span>Reading site capture</span></div>
+        <div><b></b><span>Matching plan set</span></div>
+        <div><b></b><span>Calculating cost impact</span></div>
+      </div>
+    </div>`,
+  );
+}
+
 function renderClaimFile() {
   return browser(
     html`<div class="claim-hero compact">
@@ -219,26 +256,45 @@ function renderClaimFile() {
         </div>
       </div>
       <div class="claim-grid">
-        <section class="panel evidence-photo">
+        <section class="panel evidence-photo evidence-photo--large">
           <img
             src="pipe-strike.png"
             alt="Excavator exposing a damaged underground pipe"
           />
-          <div class="photo-caption">${SCENARIO.capture.source}</div>
+          <div class="evidence-meta">
+            <div>
+              <span>GPS</span><strong>${SCENARIO.capture.coordinates}</strong>
+            </div>
+            <div>
+              <span>Time</span><strong>${SCENARIO.capture.time}</strong>
+            </div>
+            <div>
+              <span>Voice</span><strong>${SCENARIO.capture.voice}</strong>
+            </div>
+          </div>
         </section>
-        <section class="panel">
-          <div class="kicker">AI summary</div>
-          <div class="fact-row">
-            <span>What happened</span><strong>${SCENARIO.incident}</strong>
+        <section class="panel claim-middle">
+          <div>
+            <div class="kicker">AI summary</div>
+            <div class="fact-row">
+              <span>Claim basis</span><strong>${SCENARIO.ai.cause}</strong>
+            </div>
+            <div class="fact-row">
+              <span>Extra work</span><strong>${SCENARIO.ai.work}</strong>
+            </div>
           </div>
-          <div class="fact-row">
-            <span>Why claimable</span><strong>${SCENARIO.ai.cause}</strong>
-          </div>
-          <div class="fact-row">
-            <span>Extra work</span><strong>${SCENARIO.ai.work}</strong>
-          </div>
-          <div class="fact-row warning">
-            <span>Still needed</span><strong>${SCENARIO.ai.missing}</strong>
+          <div>
+            <div class="kicker">Packet</div>
+            <div class="doc-list compact-doc-list">
+              <div class="check"><span>Photo + timestamp</span><b>✓</b></div>
+              <div class="check">
+                <span>Voice note transcript</span><b>✓</b>
+              </div>
+              <div class="check"><span>Plan extract</span><b>✓</b></div>
+              <div class="check open">
+                <span>Site-supervisor confirmation</span><b>!</b>
+              </div>
+            </div>
           </div>
         </section>
         <section class="panel money-panel">
@@ -257,35 +313,18 @@ function renderClaimFile() {
   );
 }
 
-function renderDecision() {
+function renderSendStatus() {
   return browser(
-    html`<div class="decision-layout">
-      <section class="panel decision-main">
+    html`<div class="send-status">
+      <div class="send-icon">
+        <div class="send-spinner"></div>
+        <div class="send-check">✓</div>
+      </div>
+      <div class="send-copy">
         <div class="kicker">Owner packet</div>
-        <h1>Ready to send</h1>
-        <div class="decision-number">${SCENARIO.value}</div>
-        <div class="metadata-grid">
-          ${chip("Facts", "ok")} ${chip("Costs", "ok")}
-          ${chip("Deadline", "ok")}
-        </div>
-        <button class="btn ok" type="button" data-export>Send to owner</button>
-      </section>
-      <section class="panel document-preview">
-        <div class="kicker">Attachments</div>
-        <h2>${SCENARIO.incident}</h2>
-        <div class="doc-list">
-          ${SCENARIO.documents
-            .map(
-              (item) => `<div class="check"><span>${item}</span><b>✓</b></div>`,
-            )
-            .join("")}
-        </div>
-        <div class="claim-summary-card">
-          <span>Total claim</span>
-          <strong>${SCENARIO.value}</strong>
-          <small>${SCENARIO.deadline}</small>
-        </div>
-      </section>
+        <h1><span>Sending to owner</span><span>Sent</span></h1>
+        <p>${SCENARIO.claimId} · ${SCENARIO.value} · ${SCENARIO.deadline}</p>
+      </div>
     </div>`,
   );
 }
