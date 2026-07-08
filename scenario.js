@@ -32,8 +32,8 @@ const SCENARIO = {
   transcript:
     "Excavator hit a pipe while digging trench section B. The pipe was not marked in the plan. Work stopped at 10:42. We need repair, delay notice, and evidence for the claim file.",
   capture: {
-    location: "Trench B · chainage 42m",
-    coordinates: "48.1351°N · 11.5820°E",
+    location: "Trench B",
+    coordinates: "48.1351°N 11.5820°E",
     time: "Today · 10:42",
     voice:
       "We just caught a pipe in trench B — not on the drawing. Stopping the excavator now, area is secured. Need repair crew and client confirmation.",
