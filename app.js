@@ -21,6 +21,7 @@ const screens = [
     render: renderProcessing,
     autoAdvance: 3200,
     demoMs: 3200,
+    fixedDemoMs: true,
   },
   { id: "claim", silo: "claim", render: renderClaimFile, demoMs: 5200 },
   { id: "send", silo: "decision", render: renderSendStatus, demoMs: 2600 },
@@ -143,7 +144,7 @@ function render() {
   );
   applyLanguage();
   const autoDelay = state.autoPlaying
-    ? screen.demoMs * state.playbackSpeed
+    ? screen.demoMs * (screen.fixedDemoMs ? 1 : state.playbackSpeed)
     : screen.autoAdvance;
   if (autoDelay && state.current < screens.length - 1) {
     state.autoTimer = setTimeout(() => next(false), autoDelay);
