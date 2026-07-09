@@ -2157,6 +2157,7 @@ tr.highlight {
 }
 
 .processing-list div {
+  position: relative;
   display: grid;
   grid-template-columns: 46px 1fr;
   gap: 18px;
@@ -2164,6 +2165,7 @@ tr.highlight {
   min-height: 74px;
   padding: 18px 20px;
   border: 2px solid var(--line);
+  border-left-width: 7px;
   background: rgba(var(--white-rgb), 0.82);
   color: var(--muted);
   font-family: var(--mono);
@@ -2231,12 +2233,14 @@ tr.highlight {
 @keyframes processing-done {
   from {
     border-color: var(--line);
+    border-left-color: var(--line);
     background: rgba(var(--white-rgb), 0.82);
     color: var(--muted);
   }
   to {
-    border-color: rgba(var(--ok-rgb), 0.55);
-    background: rgba(var(--ok-rgb), 0.12);
+    border-color: rgba(var(--accent-rgb), 0.42);
+    border-left-color: var(--accent);
+    background: var(--white);
     color: var(--ink);
   }
 }
@@ -2264,8 +2268,9 @@ tr.highlight {
   align-content: center;
   gap: 7px;
   padding: 18px;
-  border: 2px solid rgba(var(--ok-rgb), 0.55);
-  background: rgba(var(--ok-rgb), 0.08);
+  border: 2px solid rgba(var(--accent-rgb), 0.28);
+  border-left-width: 7px;
+  background: var(--white);
 }
 
 .value-card span,
@@ -2282,7 +2287,7 @@ tr.highlight {
 
 .value-card strong,
 .claim-summary-card strong {
-  color: var(--ok-text);
+  color: var(--accent-dark);
   font-family: var(--mono);
   font-size: clamp(38px, 4.3vw, 62px);
   letter-spacing: -0.08em;
@@ -2480,12 +2485,13 @@ tr.highlight {
 .money-total {
   margin-top: 6px;
   padding: 14px;
-  border: 2px solid rgba(var(--ok-rgb), 0.5);
-  background: rgba(var(--ok-rgb), 0.08);
+  border: 2px solid rgba(var(--accent-rgb), 0.28);
+  border-left-width: 7px;
+  background: var(--white);
 }
 
 .money-total strong {
-  color: var(--ok-text);
+  color: var(--accent-dark);
   font-size: 26px;
 }
 
