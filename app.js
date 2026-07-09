@@ -7,14 +7,14 @@ const state = {
 };
 
 const playbackOptions = {
-  1: "~15s",
-  1.35: "~20s",
-  1.7: "~25s",
-  2: "~30s",
+  1: "~23s",
+  1.25: "~27s",
+  1.5: "~31s",
+  1.75: "~35s",
 };
 
 const screens = [
-  { id: "capture", silo: "site", render: renderCapture, demoMs: 2800 },
+  { id: "capture", silo: "site", render: renderCapture, demoMs: 9000 },
   {
     id: "processing",
     silo: "claim",
@@ -23,8 +23,14 @@ const screens = [
     demoMs: 3200,
     fixedDemoMs: true,
   },
-  { id: "claim", silo: "claim", render: renderClaimFile, demoMs: 5200 },
-  { id: "send", silo: "decision", render: renderSendStatus, demoMs: 2600 },
+  { id: "claim", silo: "claim", render: renderClaimFile, demoMs: 7800 },
+  {
+    id: "send",
+    silo: "decision",
+    render: renderSendStatus,
+    demoMs: 2600,
+    fixedDemoMs: true,
+  },
 ];
 
 const stage = document.querySelector("#stage");
