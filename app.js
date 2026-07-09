@@ -3,6 +3,14 @@ const state = {
   exported: false,
   autoTimer: null,
   autoPlaying: false,
+  playbackSpeed: 1,
+};
+
+const playbackOptions = {
+  1: "~15s",
+  1.35: "~20s",
+  1.7: "~25s",
+  2: "~30s",
 };
 
 const screens = [
@@ -62,6 +70,10 @@ function applyLanguage() {
     staticCopy.restart;
   document.querySelector(".footer-nav [data-autoplay]").textContent =
     state.autoPlaying ? staticCopy.autoplaying : staticCopy.autoplay;
+  document.querySelector(".footer-nav [data-speed-label]").textContent =
+    staticCopy.speed;
+  const speedSelect = document.querySelector(".footer-nav [data-speed]");
+  speedSelect.value = String(state.playbackSpeed);
   document.querySelector("#toast").textContent = staticCopy.toast;
   document.querySelectorAll("[data-lang]").forEach((button) => {
     button.classList.toggle(
@@ -130,7 +142,9 @@ function render() {
     }),
   );
   applyLanguage();
-  const autoDelay = state.autoPlaying ? screen.demoMs : screen.autoAdvance;
+  const autoDelay = state.autoPlaying
+    ? screen.demoMs * state.playbackSpeed
+    : screen.autoAdvance;
   if (autoDelay && state.current < screens.length - 1) {
     state.autoTimer = setTimeout(() => next(false), autoDelay);
   }
@@ -179,6 +193,16 @@ function restart({ keepAutoplay = false } = {}) {
 function autoplay() {
   state.autoPlaying = true;
   restart({ keepAutoplay: true });
+}
+
+function setPlaybackSpeed(value) {
+  state.playbackSpeed = Number(value);
+  state.autoPlaying = false;
+  if (state.autoTimer) {
+    clearTimeout(state.autoTimer);
+    state.autoTimer = null;
+  }
+  applyLanguage();
 }
 
 function exportPdf() {
@@ -343,6 +367,11 @@ function renderSendStatus() {
 }
 
 currentLanguage = languageFromUrl();
+document.querySelector(".footer-nav [data-speed]").innerHTML = Object.entries(
+  playbackOptions,
+)
+  .map(([value, label]) => `<option value="${value}">${label}</option>`)
+  .join("");
 renderShell();
 render();
 document
@@ -357,6 +386,9 @@ document
 document
   .querySelector(".footer-nav [data-autoplay]")
   .addEventListener("click", autoplay);
+document
+  .querySelector(".footer-nav [data-speed]")
+  .addEventListener("change", (event) => setPlaybackSpeed(event.target.value));
 document.querySelectorAll("[data-lang]").forEach((button) => {
   button.addEventListener("click", () => {
     currentLanguage = button.dataset.lang;

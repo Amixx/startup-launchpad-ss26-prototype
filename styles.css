@@ -1259,6 +1259,31 @@ tr.highlight {
   display: flex;
   gap: 10px;
   justify-self: center;
+  align-items: center;
+}
+
+.speed-control {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid rgba(var(--ink-rgb), 0.14);
+  background: var(--white);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  font-weight: 800;
+}
+
+.speed-control select {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  font-weight: 800;
+  outline: 0;
 }
 
 .progress-readout {
