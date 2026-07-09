@@ -14,7 +14,7 @@ const playbackOptions = {
 };
 
 const screens = [
-  { id: "capture", silo: "site", render: renderCapture, demoMs: 9000 },
+  { id: "capture", silo: "site", render: renderCapture, demoMs: 10000 },
   {
     id: "processing",
     silo: "claim",
@@ -23,7 +23,7 @@ const screens = [
     demoMs: 3200,
     fixedDemoMs: true,
   },
-  { id: "claim", silo: "claim", render: renderClaimFile, demoMs: 7800 },
+  { id: "claim", silo: "claim", render: renderClaimFile, demoMs: 6800 },
   {
     id: "send",
     silo: "decision",
