@@ -54,7 +54,9 @@
     "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", monospace;
   --sans: "Archivo", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --radius: 4px;
+  --radius: 14px;
+  --radius-sm: 9px;
+  --radius-lg: 22px;
 
   /* Type scale — 6 pinned steps (collapsed from 20 ad-hoc sizes) */
   --fs-micro: 10px;
@@ -344,7 +346,7 @@ button:focus-visible,
   flex-direction: column;
   overflow: hidden;
   border: 1px solid rgba(var(--white-rgb), 0.12);
-  border-radius: 24px;
+  border-radius: var(--radius-lg);
   background: var(--surface);
   color: var(--ink);
 }
@@ -378,7 +380,7 @@ button:focus-visible,
   min-height: min(720px, calc(100vh - 180px));
   margin: 0 auto;
   border: 1px solid rgba(var(--ink-rgb), 0.12);
-  border-radius: 10px;
+  border-radius: var(--radius);
   background: var(--white);
   box-shadow: var(--shadow);
   overflow: hidden;
@@ -426,6 +428,7 @@ button:focus-visible,
   align-items: center;
   padding: 0 11px;
   border-bottom: 1px solid rgba(var(--ink-rgb), 0.1);
+  border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .dots {
@@ -447,6 +450,7 @@ button:focus-visible,
   color: rgba(var(--ink-rgb), 0.54);
   font-family: var(--mono);
   font-size: var(--fs-label);
+  border-radius: var(--radius-sm);
 }
 
 .browser-body {
@@ -464,6 +468,7 @@ button:focus-visible,
   position: relative;
   border: 1px solid var(--line);
   background: rgba(var(--white-rgb), 0.78);
+  border-radius: var(--radius);
 }
 
 .panel {
@@ -550,6 +555,7 @@ p {
   font-family: var(--mono);
   font-size: var(--fs-label);
   font-weight: 750;
+  border-radius: var(--radius-sm);
 }
 
 .chip.ok {
@@ -578,6 +584,7 @@ p {
   font-weight: 800;
   letter-spacing: -0.01em;
   box-shadow: none;
+  border-radius: var(--radius-sm);
 }
 
 .btn:hover {
@@ -1233,6 +1240,7 @@ tr.highlight {
   font-family: var(--mono);
   font-weight: 800;
   box-shadow: 0 15px 35px rgba(var(--black-rgb), 0.2);
+  border-radius: var(--radius);
 }
 
 .toast.is-visible {
@@ -1274,6 +1282,7 @@ tr.highlight {
   font-family: var(--mono);
   font-size: var(--fs-label);
   font-weight: 800;
+  border-radius: var(--radius-sm);
 }
 
 .speed-control select {
@@ -1951,6 +1960,7 @@ tr.highlight {
   background: rgba(var(--black-rgb), 0.64);
   color: rgba(var(--white-rgb), 0.94);
   font-family: var(--mono);
+  border-radius: var(--radius);
 }
 
 .voice-rec {
@@ -2172,6 +2182,7 @@ tr.highlight {
   font-size: 18px;
   font-weight: 800;
   transition: none;
+  border-radius: var(--radius);
 }
 
 .processing-list div:nth-child(1) {
@@ -2271,6 +2282,7 @@ tr.highlight {
   border: 2px solid rgba(var(--accent-rgb), 0.28);
   border-left-width: 7px;
   background: var(--white);
+  border-radius: var(--radius);
 }
 
 .value-card span,
@@ -2310,6 +2322,7 @@ tr.highlight {
   height: 210px;
   display: block;
   object-fit: cover;
+  border-radius: var(--radius) var(--radius) 0 0;
 }
 
 .evidence-photo .site-scene {
@@ -2488,6 +2501,7 @@ tr.highlight {
   border: 2px solid rgba(var(--accent-rgb), 0.28);
   border-left-width: 7px;
   background: var(--white);
+  border-radius: var(--radius);
 }
 
 .money-total strong {
